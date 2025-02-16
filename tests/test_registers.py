@@ -4,7 +4,7 @@ from app.getters.register import (
     fetch_registers_modbus,
     fetch_register_modbus_by_id,
     fetch_registers_dnp,
-    fetch_register_dnp_by_id
+    fetch_register_dnp_by_id,
 )
 
 

@@ -198,9 +198,7 @@ async def fetch_registers_dnp(
             )
 
 
-async def fetch_register_dnp_by_id(
-    host: str, auth_token: str, register_dnp_id: str
-):
+async def fetch_register_dnp_by_id(host: str, auth_token: str, register_dnp_id: str):
     """
     Obtém um registro DNP específico pelo seu ID.
 

@@ -274,6 +274,35 @@ async def fetch_sensor_modbus_by_id(host, auth_token, sensor_modbus_id):
                 )
 
 
+async def fetch_sensor_dnp_by_id(host, auth_token, sensor_dnp_id):
+    """
+    Obtém detalhes de um sensor DNP específico pelo seu ID.
 
-async def fetch_sensor_dnp_by_id(host, auth_token, sensor_modbus_id):
-    raise NotImplementedError("Função não implementada")
+    Faz uma requisição GET para o endpoint `/sensors-dnp/{id}` a fim de recuperar informações detalhadas de um sensor DNP.
+
+    Args:
+        host (str): URL base da API.
+        auth_token (str): Token de autenticação Bearer.
+        sensor_dnp_id (str): Identificador único do sensor DNP.
+
+    Returns:
+        dict: Dicionário contendo informações detalhadas do sensor DNP.
+
+    Raises:
+        Exception: Se a requisição falhar ou retornar um status diferente de 200.
+
+    Example:
+        >>> sensor_dnp = await fetch_sensor_dnp_by_id("https://api.example.com", "seu_token_aqui", "321321321")
+    """
+    url = f"{host}/sensors-dnp/{sensor_dnp_id}"
+    headers = {"Authorization": f"Bearer {auth_token}"}
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            if response.status == 200:
+                sensor_dnp_info = await response.json()
+                return sensor_dnp_info
+            else:
+                raise Exception(
+                    f"Failed to fetch sensor DNP by ID, status code: {response.status}"
+                )
