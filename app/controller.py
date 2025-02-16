@@ -66,8 +66,13 @@ async def main():
             print("sensors parsed:", sensors_parsed)
             hardware_combine_sensors_modbus = combine_primary_with_secondary(hardware_parsed, sensors_parsed)
             print("hardware_combine_sensors_modbus:", hardware_combine_sensors_modbus)
-        all_flat_data.append(combine_primary_with_secondary(gateway_parsed, hardware_combine_sensors_modbus))
+            print("\n")
+        print("gateway parsed:", gateway_parsed)
+        print("hardware_combine_sensors_modbus", hardware_combine_sensors_modbus)
+        print("\n")
+        all_flat_data += combine_primary_with_secondary(gateway_parsed, hardware_combine_sensors_modbus)
     print("all flat data:", all_flat_data)
+    print("\n")
     with open("data.json", "w") as f:
         json.dump(all_flat_data, f)
 

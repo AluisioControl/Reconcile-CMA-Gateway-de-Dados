@@ -7,7 +7,7 @@ with open('data.json') as f:
 data = json.loads(data)
 
 print(data[0])
-df = pd.DataFrame(data[0])
+df = pd.DataFrame(data[1])
 
 print(df)
 df.to_csv('output.csv')
