@@ -1,50 +1,76 @@
 import aiohttp
 
+import aiohttp
 
-async def fetch_hardwares_by_gateway(
+
+async def fetch_registers_modbus(
     host: str,
     auth_token: str,
-    cma_gateway_id: str,
-    name: str = None,
+    page: int = 0,
+    size: int = 10,
+    name: str = "",
+    register_modbus_type: str = "",
+    register_data_format: str = "",
     active: bool = None,
+    sensor_modbus_id: str = "",
+    register_type_id: str = "",
+    sensor_type_id: str = "",
 ):
     """
-    Obtém a lista de hardwares associados a um gateway específico.
+    Obtém a lista de registros Modbus.
 
-    Faz uma requisição GET para o endpoint `/hardwares/all`, filtrando os resultados pelo `cmaGatewayId`.
-    Filtros opcionais como `name` e `active` podem ser utilizados para refinar a busca.
+    Faz uma requisição GET para o endpoint `/registers-modbus`, com filtros opcionais.
 
     Args:
         host (str): URL base da API.
         auth_token (str): Token de autenticação Bearer.
-        cma_gateway_id (str): Identificador único do gateway associado aos hardwares.
-        name (str, optional): Filtro pelo nome do hardware. Padrão: None.
-        active (bool, optional): Filtrar apenas hardwares ativos (`True`) ou inativos (`False`). Padrão: None.
+        page (int, optional): Número da página. Padrão: 0.
+        size (int, optional): Tamanho da página. Padrão: 10.
+        name (str, optional): Filtro pelo nome do registro. Padrão: "".
+        register_modbus_type (str, optional): Tipo de registro Modbus. Padrão: "".
+        register_data_format (str, optional): Formato de dados do registro. Padrão: "".
+        active (bool, optional): Filtrar apenas registros ativos (`True`) ou inativos (`False`). Padrão: None.
+        sensor_modbus_id (str, optional): ID do sensor Modbus. Padrão: "".
+        register_type_id (str, optional): ID do tipo de registro. Padrão: "".
+        sensor_type_id (str, optional): ID do tipo de sensor. Padrão: "".
 
     Returns:
-        list: Lista de dicionários contendo informações dos hardwares filtrados.
+        list: Lista de dicionários contendo informações dos registros filtrados.
 
     Raises:
         Exception: Se a requisição falhar ou retornar um status diferente de 200.
 
     Example:
-        >>> hardwares = await fetch_hardwares_by_gateway(
+        >>> registers = await fetch_registers_modbus(
         ...     "https://api.example.com",
         ...     "seu_token_aqui",
-        ...     "8465F883-FAC9-EF11-A3F5-5CCD5BDDDDFC",
-        ...     name="Sensor X",
+        ...     page=0,
+        ...     size=10,
+        ...     name="Registro X",
         ...     active=True
         ... )
     """
-    params = {"cmaGatewayId": cma_gateway_id}
+
+    params = {
+        "page": page,
+        "size": size,
+    }
     if name:
         params["name"] = name
+    if register_modbus_type:
+        params["registerModbusType"] = register_modbus_type
+    if register_data_format:
+        params["registerDataFormat"] = register_data_format
+    if sensor_modbus_id:
+        params["sensorModbusId"] = sensor_modbus_id
+    if register_type_id:
+        params["registerTypeId"] = register_type_id
+    if sensor_type_id:
+        params["sensorTypeId"] = sensor_type_id
     if active is not None:
-        params["active"] = str(
-            active
-        ).lower()  # API pode esperar "true" ou "false" como string
+        params["active"] = str(active).lower()  # API pode esperar "true" ou "false" como string
 
-    url = f"{host}/hardwares/all"
+    url = f"{host}/registers-modbus"
     headers = {"Authorization": f"Bearer {auth_token}"}
 
     async with aiohttp.ClientSession() as session:
@@ -52,15 +78,8 @@ async def fetch_hardwares_by_gateway(
             if response.status == 200:
                 return await response.json()
             raise Exception(
-                f"Falha ao buscar hardwares. Código de status: {response.status}"
+                f"Falha ao buscar registros Modbus. Código de status: {response.status}"
             )
-
-
-async def fetch_registers_modbus():
-    """
-    curl --location 'https://cma-backend-application.applications.cmapoc.com.br/registers-modbus?page=0&size=10&name=&registerModbusType=&registerDataFormat=&active=&sensorModbusId=&registerTypeId=&sensorTypeId=' --header 'Authorization: ••••••'
-    """
-    raise NotImplementedError("This function is not yet implemented")
 
 
 async def fetch_registers_dnp():

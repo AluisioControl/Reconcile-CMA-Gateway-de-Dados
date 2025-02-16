@@ -79,6 +79,36 @@ HardwaresList = [
     },
 ]
 
+sensors_dnp3 = [
+    {
+        "id": "AF345D34-0DEC-EF11-88FB-6045BDFE79DC",
+        "name": "teste",
+        "description": "testando protocolo",
+        "model": "xps1000",
+        "ip": "192.168.55.33",
+        "port": 20000,
+        "type": "SENSOR",
+        "attempts": 2,
+        "timeLimit": 500,
+        "actualizationPeriod": "MINUTES",
+        "pollRbePeriod": 5,
+        "pollStaticPeriod": 30,
+        "addressSource": 1,
+        "addressSlave": 2,
+        "active": True,
+        "manufacturer": {
+            "id": "6917C79D-D6D4-EF11-88FA-6045BDFE79DC",
+            "name": "Fabricante 01",
+            "active": True,
+        },
+        "hardware": {
+            "id": "78CACAF7-0CEC-EF11-88FB-6045BDFE79DC",
+            "name": "Equipamento_dnp3",
+            "sapId": "10000",
+        },
+    }
+]
+
 
 @pytest_asyncio.fixture(scope="session")
 async def examples():
@@ -91,6 +121,8 @@ async def examples():
         "valid_hardware_id": "6FE59604-1214-48D3-A6FE-6190A38653CE",
         "valid_hardware_id_dnp3": "78CACAF7-0CEC-EF11-88FB-6045BDFE79DC",
         "valid_sensor_id": "6FE59604-1214-48D3-A6FE-6190A38653CE",
+        "valid_sensor_modbus_id": "17BC1946-AF94-42AC-BC05-B6141C001272",
+        "valid_sensor_dnp3_id": "AF345D34-0DEC-EF11-88FB-6045BDFE79DC",
         "hardwares": HardwaresList,
     }
 
