@@ -25,3 +25,13 @@ async def get_auth_token(host:str, username: str, password: str):
                 raise Exception(f"Failed to get token, status code: {response.status}")
         response
 
+if __name__ == "__main__":
+    host = os.environ.get('GWTDADOS_HOST')
+    username = os.environ.get('GWTDADOS_USERNAME')
+    password = os.environ.get('GWTDADOS_PASSWORD')
+
+    try:
+        token = asyncio.run(get_auth_token(host, username, password))
+        print(f"Received token: {token}")
+    except Exception as e:
+        print(f"Error: {e}")
