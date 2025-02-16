@@ -1,7 +1,7 @@
 import aiohttp
 
 
-async def fetch_registers_modbus_by_id(
+async def fetch_register_modbus_by_id(
     host: str, auth_token: str, register_modbus_id: str
 ):
     """
@@ -198,9 +198,36 @@ async def fetch_registers_dnp(
             )
 
 
-async def fetch_registers_dnp_by_id():
+async def fetch_register_dnp_by_id(
+    host: str, auth_token: str, register_dnp_id: str
+):
     """
-    curl --location 'https://cma-backend-application.applications.cmapoc.com.br/registers-modbus/677535B8-FBC9-EF11-A3F5-5CCD5BDDDDFC' \
---header 'Authorization: ••••••'
+    Obtém um registro DNP específico pelo seu ID.
+
+    Faz uma requisição GET para o endpoint `/registers-dnp/{id}` a fim de recuperar informações detalhadas de um registro.
+
+    Args:
+        host (str): URL base da API.
+        auth_token (str): Token de autenticação Bearer.
+        register_dnp_id (str): Identificador único do registro DNP.
+
+    Returns:
+        dict: Dicionário contendo informações detalhadas do registro DNP.
+
+    Raises:
+        Exception: Se a requisição falhar ou retornar um status diferente de 200.
+
+    Example:
+        >>> register = await fetch_registers_dnp_by_id("https://api.example.com", "seu_token_aqui", "id_do_registro")
     """
-    pass
+
+    url = f"{host}/registers-dnp/{register_dnp_id}"
+    headers = {"Authorization": f"Bearer {auth_token}"}
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            if response.status == 200:
+                return await response.json()
+            raise Exception(
+                f"Falha ao buscar registro DNP. Código de status: {response.status}"
+            )

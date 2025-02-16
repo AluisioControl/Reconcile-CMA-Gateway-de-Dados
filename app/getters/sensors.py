@@ -186,7 +186,7 @@ def parse_sensor_modbus_data(data_sensores):
     return parsed_data
 
 
-def parse_sensor_dnp3_data(data_sensor_dnp3):
+def parse_sensor_dnp_data(data_sensor_dnp3):
     """
     Converte os campos do sensor DNP3 para o novo formato especificado.
 
@@ -272,3 +272,8 @@ async def fetch_sensor_modbus_by_id(host, auth_token, sensor_modbus_id):
                 raise Exception(
                     f"Failed to fetch sensor Modbus by ID, status code: {response.status}"
                 )
+
+
+
+async def fetch_sensor_dnp_by_id(host, auth_token, sensor_modbus_id):
+    raise NotImplementedError("Função não implementada")
