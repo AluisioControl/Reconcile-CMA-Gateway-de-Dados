@@ -238,3 +238,37 @@ def parse_sensor_dnp3_data(data_sensor_dnp3):
         "active_sen_dnp3_cma": data_sensor_dnp3.get("cma", {}).get("active", None),
     }
     return parsed_data
+
+
+async def fetch_sensor_modbus_by_id(host, auth_token, sensor_modbus_id):
+    """
+    Obtém detalhes de um sensor Modbus específico pelo seu ID.
+
+    Faz uma requisição GET para o endpoint `/sensors-modbus/{id}` a fim de recuperar informações detalhadas de um sensor Modbus.
+
+    Args:
+        host (str): URL base da API.
+        auth_token (str): Token de autenticação Bearer.
+        sensor_modbus_id (str): Identificador único do sensor Modbus.
+
+    Returns:
+        dict: Dicionário contendo informações detalhadas do sensor Modbus.
+
+    Raises:
+        Exception: Se a requisição falhar ou retornar um status diferente de 200.
+
+    Example:
+        >>> sensor_modbus = await fetch_sensor_modbus_by_id("https://api.example.com", "seu_token_aqui", "17BC1946-AF94-42AC-BC05-B6141C001272")
+    """
+    url = f"{host}/sensors-modbus/{sensor_modbus_id}"
+    headers = {"Authorization": f"Bearer {auth_token}"}
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            if response.status == 200:
+                sensor_modbus_info = await response.json()
+                return sensor_modbus_info
+            else:
+                raise Exception(
+                    f"Failed to fetch sensor Modbus by ID, status code: {response.status}"
+                )
