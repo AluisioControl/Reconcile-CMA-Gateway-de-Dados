@@ -75,28 +75,27 @@ def parse_hardware_data(data_hardware):
     return parsed_data
 
 
-curl --location 'https://cma-backend-application.applications.cmapoc.com.br/hardwares/B0D0625C-AFD1-EF11-88F9-6045BDFE79DC' \
---header 'Authorization: ••••••'
-
-async def fetch_gateway_by_id(host, auth_token, gateway_id):
+async def fetch_hardware_by_id(host, auth_token, hardware_id):
     """
-    Obtém detalhes de um gateway específico pelo seu ID.
+    Obtém detalhes de um hardware específico pelo seu ID.
 
-    Faz uma requisição GET para o endpoint `/cma-gateways/{id}` a fim de recuperar informações detalhadas de um gateway.
+    Faz uma requisição GET para o endpoint `/hardwares/{id}` a fim de recuperar informações detalhadas de um hardware.
 
     Args:
-        gateway_id (str): Identificador único do gateway.
+        host (str): URL base da API.
+        auth_token (str): Token de autenticação Bearer.
+        hardware_id (str): Identificador único do hardware.
 
     Returns:
-        dict: Dicionário contendo informações detalhadas do gateway.
+        dict: Dicionário contendo informações detalhadas do hardware.
 
     Raises:
         Exception: Se a requisição falhar ou retornar um status diferente de 200.
 
     Example:
-        >>> gateway = await fetch_gateway_by_id("https://api.example.com", "seu_token_aqui", "56B742EF-AED1-EF11-88F9-6045BDFE79DC")
+        >>> hardware = await fetch_hardware_by_id("https://api.example.com", "seu_token_aqui", "B0D0625C-AFD1-EF11-88F9-6045BDFE79DC")
     """
-    url = f"{host}/cma-gateways/{gateway_id}"
+    url = f"{host}/hardwares/{hardware_id}"
     headers = {
         'Authorization': f'Bearer {auth_token}'
     }
@@ -104,7 +103,7 @@ async def fetch_gateway_by_id(host, auth_token, gateway_id):
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:
             if response.status == 200:
-                gateway_info = await response.json()
-                return gateway_info
+                hardware_info = await response.json()
+                return hardware_info
             else:
-                raise Exception(f"Failed to fetch gateway by ID, status code: {response.status}")
+                raise Exception(f"Failed to fetch hardware by ID, status code: {response.status}")
