@@ -1,7 +1,20 @@
-
 import aiohttp
 
-async def fetch_sensors_modbus(host: str, auth_token: str, page: int = 0, size: int = 10, name: str = None, model: str = None, gateway_name: str = None, type: str = "SENSOR", actualization_period: str = "MINUTES", active: bool = None, manufacturer_id: str = None, hardware_id: str = None):
+
+async def fetch_sensors_modbus(
+    host: str,
+    auth_token: str,
+    page: int = 0,
+    size: int = 10,
+    name: str = None,
+    model: str = None,
+    gateway_name: str = None,
+    type: str = "SENSOR",
+    actualization_period: str = "MINUTES",
+    active: bool = None,
+    manufacturer_id: str = None,
+    hardware_id: str = None,
+):
     """
     Obtém a lista de sensores Modbus.
 
@@ -31,7 +44,7 @@ async def fetch_sensors_modbus(host: str, auth_token: str, page: int = 0, size: 
         "page": page,
         "size": size,
         "type": type,
-        "actualizationPeriod": actualization_period
+        "actualizationPeriod": actualization_period,
     }
     if name:
         params["name"] = name
@@ -40,7 +53,9 @@ async def fetch_sensors_modbus(host: str, auth_token: str, page: int = 0, size: 
     if gateway_name:
         params["gatewayName"] = gateway_name
     if active is not None:
-        params["active"] = str(active).lower()  # API pode esperar "true" ou "false" como string
+        params["active"] = str(
+            active
+        ).lower()  # API pode esperar "true" ou "false" como string
     if manufacturer_id:
         params["manufacturerId"] = manufacturer_id
     if hardware_id:
@@ -53,10 +68,25 @@ async def fetch_sensors_modbus(host: str, auth_token: str, page: int = 0, size: 
         async with session.get(url, headers=headers, params=params) as response:
             if response.status == 200:
                 return await response.json()
-            raise Exception(f"Falha ao buscar sensores Modbus. Código de status: {response.status}")
+            raise Exception(
+                f"Falha ao buscar sensores Modbus. Código de status: {response.status}"
+            )
 
 
-async def fetch_sensors_dnp(host: str, auth_token: str, page: int = 0, size: int = 10, name: str = None, model: str = None, gateway_name: str = None, type: str = "SENSOR", actualization_period: str = "MINUTES", active: bool = None, manufacturer_id: str = "", hardware_id: str = ""):
+async def fetch_sensors_dnp(
+    host: str,
+    auth_token: str,
+    page: int = 0,
+    size: int = 10,
+    name: str = None,
+    model: str = None,
+    gateway_name: str = None,
+    type: str = "SENSOR",
+    actualization_period: str = "MINUTES",
+    active: bool = None,
+    manufacturer_id: str = "",
+    hardware_id: str = "",
+):
     """
     Obtém a lista de sensores DNP.
 
@@ -87,7 +117,7 @@ async def fetch_sensors_dnp(host: str, auth_token: str, page: int = 0, size: int
         "size": size,
         "type": type,
         "actualizationPeriod": actualization_period,
-        "hardwareId": hardware_id
+        "hardwareId": hardware_id,
     }
     if name:
         params["name"] = name
@@ -98,7 +128,9 @@ async def fetch_sensors_dnp(host: str, auth_token: str, page: int = 0, size: int
     if gateway_name:
         params["gatewayName"] = gateway_name
     if active is not None:
-        params["active"] = str(active).lower()  # API pode esperar "true" ou "false" como string
+        params["active"] = str(
+            active
+        ).lower()  # API pode esperar "true" ou "false" como string
 
     url = f"{host}/sensors-dnp"
     headers = {"Authorization": f"Bearer {auth_token}"}
@@ -107,7 +139,10 @@ async def fetch_sensors_dnp(host: str, auth_token: str, page: int = 0, size: int
         async with session.get(url, headers=headers, params=params) as response:
             if response.status == 200:
                 return await response.json()
-            raise Exception(f"Falha ao buscar sensores DNP. Código de status: {response.status}")
+            raise Exception(
+                f"Falha ao buscar sensores DNP. Código de status: {response.status}"
+            )
+
 
 def parse_sensor_modbus_data(data_sensores):
     """
@@ -146,9 +181,10 @@ def parse_sensor_modbus_data(data_sensores):
         "active_man": data_sensores.get("manufacturer", {}).get("active", None),
         "id_hw_sen": data_sensores.get("hardware", {}).get("id", None),
         "name_hw_sen": data_sensores.get("hardware", {}).get("name", None),
-        "sapId_hd_sen": data_sensores.get("hardware", {}).get("sapId", None)
+        "sapId_hd_sen": data_sensores.get("hardware", {}).get("sapId", None),
     }
     return parsed_data
+
 
 def parse_sensor_dnp3_data(data_sensor_dnp3):
     """
@@ -176,28 +212,29 @@ def parse_sensor_dnp3_data(data_sensor_dnp3):
         "type_sen_dnp3": data_sensor_dnp3.get("type", None),
         "attempts_sen_dnp3": data_sensor_dnp3.get("attempts", None),
         "timeLimit_sen_dnp3": data_sensor_dnp3.get("timeLimit", None),
-        "actualizationPeriod_sen_dnp3": data_sensor_dnp3.get("actualizationPeriod", None),
+        "actualizationPeriod_sen_dnp3": data_sensor_dnp3.get(
+            "actualizationPeriod", None
+        ),
         "pollRbePeriod_sen_dnp3": data_sensor_dnp3.get("pollRbePeriod", None),
         "pollStaticPeriod_sen_dnp3": data_sensor_dnp3.get("pollStaticPeriod", None),
         "addressSource_sen_dnp3": data_sensor_dnp3.get("addressSource", None),
         "addressSlave_sen_dnp3": data_sensor_dnp3.get("addressSlave", None),
         "active_sen_dnp3": data_sensor_dnp3.get("active", None),
-        
         # Manufacturer data
         "id_sen_dnp3_man": data_sensor_dnp3.get("manufacturer", {}).get("id", None),
         "name_sen_dnp3_man": data_sensor_dnp3.get("manufacturer", {}).get("name", None),
-        "active_sen_dnp3_man": data_sensor_dnp3.get("manufacturer", {}).get("active", None),
-        
+        "active_sen_dnp3_man": data_sensor_dnp3.get("manufacturer", {}).get(
+            "active", None
+        ),
         # Hardware data
         "id_sen_dnp3_hw": data_sensor_dnp3.get("hardware", {}).get("id", None),
         "name_sen_dnp3_hw": data_sensor_dnp3.get("hardware", {}).get("name", None),
         "sapId_sen_dnp3_hw": data_sensor_dnp3.get("hardware", {}).get("sapId", None),
         "active_sen_dnp3_hw": data_sensor_dnp3.get("hardware", {}).get("active", None),
-        
         # CMA data
         "id_sen_dnp3_cma": data_sensor_dnp3.get("cma", {}).get("id", None),
         "name_sen_dnp3_cma": data_sensor_dnp3.get("cma", {}).get("name", None),
         "ip_sen_dnp3_cma": data_sensor_dnp3.get("cma", {}).get("ip", None),
-        "active_sen_dnp3_cma": data_sensor_dnp3.get("cma", {}).get("active", None)
+        "active_sen_dnp3_cma": data_sensor_dnp3.get("cma", {}).get("active", None),
     }
     return parsed_data

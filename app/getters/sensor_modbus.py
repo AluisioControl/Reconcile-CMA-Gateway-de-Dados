@@ -1,6 +1,20 @@
 import aiohttp
 
-async def fetch_sensors_dnp(host: str, auth_token: str, page: int = 0, size: int = 10, name: str = None, model: str = None, gateway_name: str = None, type: str = "SENSOR", actualization_period: str = "MINUTES", active: bool = None, manufacturer_id: str = "", hardware_id: str = ""):
+
+async def fetch_sensors_dnp(
+    host: str,
+    auth_token: str,
+    page: int = 0,
+    size: int = 10,
+    name: str = None,
+    model: str = None,
+    gateway_name: str = None,
+    type: str = "SENSOR",
+    actualization_period: str = "MINUTES",
+    active: bool = None,
+    manufacturer_id: str = "",
+    hardware_id: str = "",
+):
     """
     Obtém a lista de sensores DNP.
 
@@ -32,7 +46,7 @@ async def fetch_sensors_dnp(host: str, auth_token: str, page: int = 0, size: int
         "type": type,
         "actualizationPeriod": actualization_period,
         "manufacturerId": manufacturer_id,
-        "hardwareId": hardware_id
+        "hardwareId": hardware_id,
     }
     if name:
         params["name"] = name
@@ -41,7 +55,9 @@ async def fetch_sensors_dnp(host: str, auth_token: str, page: int = 0, size: int
     if gateway_name:
         params["gatewayName"] = gateway_name
     if active is not None:
-        params["active"] = str(active).lower()  # API pode esperar "true" ou "false" como string
+        params["active"] = str(
+            active
+        ).lower()  # API pode esperar "true" ou "false" como string
 
     url = f"{host}/sensors-dnp"
     headers = {"Authorization": f"Bearer {auth_token}"}
@@ -50,5 +66,6 @@ async def fetch_sensors_dnp(host: str, auth_token: str, page: int = 0, size: int
         async with session.get(url, headers=headers, params=params) as response:
             if response.status == 200:
                 return await response.json()
-            raise Exception(f"Falha ao buscar sensores DNP. Código de status: {response.status}")
-
+            raise Exception(
+                f"Falha ao buscar sensores DNP. Código de status: {response.status}"
+            )

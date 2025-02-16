@@ -1,5 +1,6 @@
 import aiohttp
 
+
 class Gateway:
 
     def __init__(self, host, auth_token):
@@ -32,7 +33,7 @@ class Gateway:
             >>> gateway = await get_gateway_by_name("https://api.example.com", "seu_token_aqui", "Gateway X")
         """
         for gateway in self.gateways:
-            if gateway['name_gtw'] == name:
+            if gateway["name_gtw"] == name:
                 return gateway
         return None
 
@@ -56,9 +57,7 @@ class Gateway:
             >>> gateways = await fetch_all_gateways("https://api.example.com", "seu_token_aqui")
         """
         url = f"{self.host}/cma-gateways/all"
-        headers = {
-            'Authorization': f'Bearer {self.auth_token}'
-        }
+        headers = {"Authorization": f"Bearer {self.auth_token}"}
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers) as response:
@@ -66,7 +65,9 @@ class Gateway:
                     gateways = await response.json()
                     return gateways
                 else:
-                    raise Exception(f"Failed to fetch gateways, status code: {response.status}")
+                    raise Exception(
+                        f"Failed to fetch gateways, status code: {response.status}"
+                    )
 
     @staticmethod
     def parse(data_gateway):
@@ -87,12 +88,14 @@ class Gateway:
             "id_sub": data_gateway.get("substation", {}).get("id", None),
             "name_sub": data_gateway.get("substation", {}).get("name", None),
             "active_sub": data_gateway.get("substation", {}).get("active", None),
-            "sapAbbreviation_sub": data_gateway.get("substation", {}).get("sapAbbreviation", None),
+            "sapAbbreviation_sub": data_gateway.get("substation", {}).get(
+                "sapAbbreviation", None
+            ),
             "createdAt_gtw": data_gateway.get("createdAt", None),
             "updatedAt_gtw": data_gateway.get("updatedAt", None),
             "userCreatedId_gtw": data_gateway.get("userCreatedId", None),
             "userUpdatedId_gtw": data_gateway.get("userUpdatedId", None),
-            "substationId_gtw": data_gateway.get("substationId", None)
+            "substationId_gtw": data_gateway.get("substationId", None),
         }
         return parsed_data
 
@@ -115,9 +118,7 @@ class Gateway:
             >>> gateway = await fetch_gateway_by_id("https://api.example.com", "seu_token_aqui", "56B742EF-AED1-EF11-88F9-6045BDFE79DC")
         """
         url = f"{self.host}/cma-gateways/{gateway_id}"
-        headers = {
-            'Authorization': f'Bearer {self.auth_token}'
-        }
+        headers = {"Authorization": f"Bearer {self.auth_token}"}
 
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers) as response:
@@ -125,8 +126,10 @@ class Gateway:
                     gateway_info = await response.json()
                     return gateway_info
                 else:
-                    raise Exception(f"Failed to fetch gateway by ID, status code: {response.status}")
-    
+                    raise Exception(
+                        f"Failed to fetch gateway by ID, status code: {response.status}"
+                    )
+
     def process(self):
         """
         Processa os gateways obtidos e os converte para o novo formato.
@@ -137,6 +140,6 @@ class Gateway:
         parsed_gateways = []
         gateways = self.fetch_all_gateways()
         for gateway in gateways:
-            data = self.fetch_gateway_by_id(gateway['id'])
+            data = self.fetch_gateway_by_id(gateway["id"])
             parsed_gateways.append(self.parse(data))
         return parsed_gateways

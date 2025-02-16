@@ -2,7 +2,13 @@ import aiohttp
 import asyncio
 
 
-async def fetch_hardwares_by_gateway(host: str, auth_token: str, cma_gateway_id: str, name: str = None, active: bool = None):
+async def fetch_hardwares_by_gateway(
+    host: str,
+    auth_token: str,
+    cma_gateway_id: str,
+    name: str = None,
+    active: bool = None,
+):
     """
     Obtém a lista de hardwares associados a um gateway específico.
 
@@ -24,10 +30,10 @@ async def fetch_hardwares_by_gateway(host: str, auth_token: str, cma_gateway_id:
 
     Example:
         >>> hardwares = await fetch_hardwares_by_gateway(
-        ...     "https://api.example.com", 
-        ...     "seu_token_aqui", 
-        ...     "8465F883-FAC9-EF11-A3F5-5CCD5BDDDDFC", 
-        ...     name="Sensor X", 
+        ...     "https://api.example.com",
+        ...     "seu_token_aqui",
+        ...     "8465F883-FAC9-EF11-A3F5-5CCD5BDDDDFC",
+        ...     name="Sensor X",
         ...     active=True
         ... )
     """
@@ -35,7 +41,9 @@ async def fetch_hardwares_by_gateway(host: str, auth_token: str, cma_gateway_id:
     if name:
         params["name"] = name
     if active is not None:
-        params["active"] = str(active).lower()  # API pode esperar "true" ou "false" como string
+        params["active"] = str(
+            active
+        ).lower()  # API pode esperar "true" ou "false" como string
 
     url = f"{host}/hardwares/all"
     headers = {"Authorization": f"Bearer {auth_token}"}
@@ -44,7 +52,9 @@ async def fetch_hardwares_by_gateway(host: str, auth_token: str, cma_gateway_id:
         async with session.get(url, headers=headers, params=params) as response:
             if response.status == 200:
                 return await response.json()
-            raise Exception(f"Falha ao buscar hardwares. Código de status: {response.status}")
+            raise Exception(
+                f"Falha ao buscar hardwares. Código de status: {response.status}"
+            )
 
 
 def parse_hardware_data(data_hardware):
@@ -70,7 +80,7 @@ def parse_hardware_data(data_hardware):
         "id_cma": data_hardware.get("cmaGateway", {}).get("id", None),
         "name_cma": data_hardware.get("cmaGateway", {}).get("name", None),
         "ip_cma": data_hardware.get("cmaGateway", {}).get("ip", None),
-        "active_cma": data_hardware.get("cmaGateway", {}).get("active", None)
+        "active_cma": data_hardware.get("cmaGateway", {}).get("active", None),
     }
     return parsed_data
 
@@ -96,9 +106,7 @@ async def fetch_hardware_by_id(host, auth_token, hardware_id):
         >>> hardware = await fetch_hardware_by_id("https://api.example.com", "seu_token_aqui", "B0D0625C-AFD1-EF11-88F9-6045BDFE79DC")
     """
     url = f"{host}/hardwares/{hardware_id}"
-    headers = {
-        'Authorization': f'Bearer {auth_token}'
-    }
+    headers = {"Authorization": f"Bearer {auth_token}"}
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:
@@ -106,4 +114,6 @@ async def fetch_hardware_by_id(host, auth_token, hardware_id):
                 hardware_info = await response.json()
                 return hardware_info
             else:
-                raise Exception(f"Failed to fetch hardware by ID, status code: {response.status}")
+                raise Exception(
+                    f"Failed to fetch hardware by ID, status code: {response.status}"
+                )

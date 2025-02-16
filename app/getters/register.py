@@ -1,6 +1,13 @@
 import aiohttp
 
-async def fetch_hardwares_by_gateway(host: str, auth_token: str, cma_gateway_id: str, name: str = None, active: bool = None):
+
+async def fetch_hardwares_by_gateway(
+    host: str,
+    auth_token: str,
+    cma_gateway_id: str,
+    name: str = None,
+    active: bool = None,
+):
     """
     Obtém a lista de hardwares associados a um gateway específico.
 
@@ -22,10 +29,10 @@ async def fetch_hardwares_by_gateway(host: str, auth_token: str, cma_gateway_id:
 
     Example:
         >>> hardwares = await fetch_hardwares_by_gateway(
-        ...     "https://api.example.com", 
-        ...     "seu_token_aqui", 
-        ...     "8465F883-FAC9-EF11-A3F5-5CCD5BDDDDFC", 
-        ...     name="Sensor X", 
+        ...     "https://api.example.com",
+        ...     "seu_token_aqui",
+        ...     "8465F883-FAC9-EF11-A3F5-5CCD5BDDDDFC",
+        ...     name="Sensor X",
         ...     active=True
         ... )
     """
@@ -33,7 +40,9 @@ async def fetch_hardwares_by_gateway(host: str, auth_token: str, cma_gateway_id:
     if name:
         params["name"] = name
     if active is not None:
-        params["active"] = str(active).lower()  # API pode esperar "true" ou "false" como string
+        params["active"] = str(
+            active
+        ).lower()  # API pode esperar "true" ou "false" como string
 
     url = f"{host}/hardwares/all"
     headers = {"Authorization": f"Bearer {auth_token}"}
@@ -42,7 +51,10 @@ async def fetch_hardwares_by_gateway(host: str, auth_token: str, cma_gateway_id:
         async with session.get(url, headers=headers, params=params) as response:
             if response.status == 200:
                 return await response.json()
-            raise Exception(f"Falha ao buscar hardwares. Código de status: {response.status}")
+            raise Exception(
+                f"Falha ao buscar hardwares. Código de status: {response.status}"
+            )
+
 
 async def fetch_registers_modbus():
     """
@@ -50,11 +62,10 @@ async def fetch_registers_modbus():
     """
     raise NotImplementedError("This function is not yet implemented")
 
+
 async def fetch_registers_dnp():
     """
     curl --location 'https://cma-backend-application.applications.cmapoc.com.br/sensors-dnp?page=0&size=10&name=sens&model=model&gatewayName=Gateway%201&type=SENSOR&actualizationPeriod=MINUTES&active=true&manufacturerId=&hardwareId=' \
 --header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzNDgxRjg5Qi1EN0NELUVGMTEtODhGOS02MDQ1QkRGRTc5REMiLCJ1c2VybmFtZSI6ImNvbnRyb2xAYXRsYW50aWNvLmNvbSIsImNsYWltcyI6WzIwMCwzMDAsNDAwXSwiaWF0IjoxNzM5NzA4MjczLCJleHAiOjE3Mzk3MTU0NzN9.rpkdDJX8ej9Zi_kLAQ7nyttdoqQcei4SvxHqPB2cGuQ'
     """
     raise NotImplementedError("This function is not yet implemented")
-
-

@@ -22,9 +22,7 @@ async def fetch_all_gateways(host, auth_token):
         >>> gateways = await fetch_all_gateways("https://api.example.com", "seu_token_aqui")
     """
     url = f"{host}/cma-gateways/all"
-    headers = {
-        'Authorization': f'Bearer {auth_token}'
-    }
+    headers = {"Authorization": f"Bearer {auth_token}"}
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:
@@ -32,7 +30,9 @@ async def fetch_all_gateways(host, auth_token):
                 gateways = await response.json()
                 return gateways
             else:
-                raise Exception(f"Failed to fetch gateways, status code: {response.status}")
+                raise Exception(
+                    f"Failed to fetch gateways, status code: {response.status}"
+                )
 
 
 def parse_gateway(data_gateway):
@@ -53,14 +53,17 @@ def parse_gateway(data_gateway):
         "id_sub": data_gateway.get("substation", {}).get("id", None),
         "name_sub": data_gateway.get("substation", {}).get("name", None),
         "active_sub": data_gateway.get("substation", {}).get("active", None),
-        "sapAbbreviation_sub": data_gateway.get("substation", {}).get("sapAbbreviation", None),
+        "sapAbbreviation_sub": data_gateway.get("substation", {}).get(
+            "sapAbbreviation", None
+        ),
         "createdAt_gtw": data_gateway.get("createdAt", None),
         "updatedAt_gtw": data_gateway.get("updatedAt", None),
         "userCreatedId_gtw": data_gateway.get("userCreatedId", None),
         "userUpdatedId_gtw": data_gateway.get("userUpdatedId", None),
-        "substationId_gtw": data_gateway.get("substationId", None)
+        "substationId_gtw": data_gateway.get("substationId", None),
     }
     return parsed_data
+
 
 async def fetch_gateway_by_id(host, auth_token, gateway_id):
     """
@@ -81,9 +84,7 @@ async def fetch_gateway_by_id(host, auth_token, gateway_id):
         >>> gateway = await fetch_gateway_by_id("https://api.example.com", "seu_token_aqui", "56B742EF-AED1-EF11-88F9-6045BDFE79DC")
     """
     url = f"{host}/cma-gateways/{gateway_id}"
-    headers = {
-        'Authorization': f'Bearer {auth_token}'
-    }
+    headers = {"Authorization": f"Bearer {auth_token}"}
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url, headers=headers) as response:
@@ -91,7 +92,10 @@ async def fetch_gateway_by_id(host, auth_token, gateway_id):
                 gateway_info = await response.json()
                 return gateway_info
             else:
-                raise Exception(f"Failed to fetch gateway by ID, status code: {response.status}")
+                raise Exception(
+                    f"Failed to fetch gateway by ID, status code: {response.status}"
+                )
+
 
 def process_gateway():
     """
@@ -103,7 +107,6 @@ def process_gateway():
     parsed_gateways = []
     gateways = fetch_all_gateways()
     for gateway in gateways:
-        data = fetch_gateway_by_id(gateway['id'])
+        data = fetch_gateway_by_id(gateway["id"])
         parsed_gateways.append(parse_gateway(data))
     return parsed_gateways
-
