@@ -1,69 +1,76 @@
 from abc import ABC, abstractmethod
 from .login import get_auth_token
-from app.getters.gateway import fetch_all_gateways, fetch_gateway_by_id, parse_gateway
+from app.getters.gateway import fetch_all_gateways, fetch_gateway_by_id, parse_gateway_data
+from app.getters.hardware import fetch_hardwares_by_gateway, fetch_hardware_by_id, parse_hardware_data
+from app.getters.sensors import fetch_sensors_modbus, fetch_sensor_modbus_by_id, parse_sensor_modbus_data
+
 import os
+from .settings import configs
+import asyncio
 
-class Handler(ABC):
-    def __init__(self, next_handler=None):
-        self._next_handler = next_handler
-        self.host = os.environ.get("GWTDADOS_HOST")
-        self.username = os.environ.get("GWTDADOS_USERNAME")
-        self.password = os.environ.get("GWTDADOS_PASSWORD")
+import json
 
-    async def login(self):
-        self.auth_token = await get_auth_token(
-            host=self.host, username=self.username, password=self.password
-        )
+def multiplex_dicts(primary_list: list[dict], secondary_list: list[dict]) -> list[dict]:
+    """
+    Combina cada dicionário da lista primária com cada dicionário da lista secundária.
+    
+    :param primary_list: Lista de dicionários com informações primárias.
+    :param secondary_list: Lista de dicionários com informações secundárias.
+    :return: Lista de dicionários combinados.
+    """
+    # Usa compreensão de listas para fundir cada par com desempacotamento de dicionários
+    return [{**p, **s} for p in primary_list for s in secondary_list]
 
-    @abstractmethod
-    def fetch(self, data):
-        pass
+def combine_primary_with_secondary(primary: dict, secondary_list: list[dict]) -> list[dict]:
+    """
+    Combina o dicionário primário com cada dicionário da lista secundária.
+    
+    :param primary: Dicionário com informações primárias.
+    :param secondary_list: Lista de dicionários com informações secundárias.
+    :return: Lista de dicionários combinados.
+    """
+    return [{**primary, **secondary} for secondary in secondary_list]
 
-    @abstractmethod
-    def parse(self, data):
-        pass
-
-    def next_handler(self, data):
-        if self._next_handler:
-            return self._next_handler.handle(data)
-        return data
-
-    def handle(self, data):
-        fetched_data = self.fetch(data)
-        parsed_data = self.parse(fetched_data)
-        return self.next_handler(parsed_data)
-
-
-class GatewayHandler(Handler):
-    async def fetch(self, data):
-        await self.login()
-        data_gateways = fetch_all_gateways(host=self.host, auth_token=self.auth_token)
-        for gateway in data_gateways:
-            gateway_id = gateway["id"]
-            data_gateway = await fetch_gateway_by_id(
-                host=self.host, auth_token=self.auth_token, gateway_id=gateway_id
-            )
-            yield data_gateway
-
-    async def parse(self, data):
-        for gateway in data:
-            yield parse_gateway(gateway)
-        # for gateway in await self.fetch(data):
-        #     yield parse_gateway(gateway)
-
-
-class GatewayDetailHandler(Handler):
-    def fetch(self, data):
-        # Implement the logic to fetch the detail of each gateway
-        pass
-
-    def parse(self, data):
-        # Implement the logic to parse the detail of each gateway
-        pass
+async def main():
+    all_flat_data = []
+    hardwares_parsed = []
+    sensors_parsed = []
+    gateways = await fetch_all_gateways(host=configs.host, auth_token=configs.auth_token)
+    for gateway in gateways:
+        gateway_id = gateway["id"]
+        gateway_data = await fetch_gateway_by_id(host=configs.host, auth_token=configs.auth_token, gateway_id=gateway_id)
+        gateway_parsed = parse_gateway_data(gateway_data)
+        print("gateway parsed:", gateway_parsed)
+        for hardware in await fetch_hardwares_by_gateway(host=configs.host, auth_token=configs.auth_token, cma_gateway_id=gateway_id):
+            hardware_id = hardware["id"]
+            hardware_data = await fetch_hardware_by_id(host=configs.host, auth_token=configs.auth_token, hardware_id=hardware_id)
+            hardware_parsed = parse_hardware_data(hardware_data)
+            print("hardware parsed:", hardware_parsed)
+            hardwares_parsed.append(hardware_parsed)
+            # consultar todos os sensor MODBUS associado a cada hardware
+            sensors_parsed = []
+            sensors = await fetch_sensors_modbus(host=configs.host, auth_token=configs.auth_token, hardware_id=hardware_id)
+            print("\n\n\n")
+            print("sensors:", sensors)
+            if not sensors["content"]:
+                sensors_parsed.append(parse_sensor_modbus_data({}))
+            else:
+                for sensor in sensors["content"]: # informação de sensores modbus paginada
+                    print("sensor modbus:", sensor)
+                    sensor_id = sensor["id"]
+                    sensor_data = await fetch_sensor_modbus_by_id(host=configs.host, auth_token=configs.auth_token, sensor_modbus_id=sensor_id)
+                    sensor_parsed = parse_sensor_modbus_data(sensor_data)
+                    sensors_parsed.append(sensor_parsed)
+                    print("sensor modbus:", sensor)
+            print("hardware_parsed:", hardware_parsed)
+            print("sensors parsed:", sensors_parsed)
+            hardware_combine_sensors_modbus = combine_primary_with_secondary(hardware_parsed, sensors_parsed)
+            print("hardware_combine_sensors_modbus:", hardware_combine_sensors_modbus)
+        all_flat_data.append(combine_primary_with_secondary(gateway_parsed, hardware_combine_sensors_modbus))
+    print("all flat data:", all_flat_data)
+    with open("data.json", "w") as f:
+        json.dump(all_flat_data, f)
 
 
 if __name__ == "__main__":
-    chain = GatewayHandler()
-    result = chain.handle(None)
-    print(result)
-
+    asyncio.run(main())

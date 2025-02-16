@@ -10,9 +10,7 @@ async def get_auth_token(host: str, username: str, password: str):
     payload = {"username": username, "password": password}
 
     async with aiohttp.ClientSession() as session:
-        print(f"Requesting token from {url}")
         async with session.post(url, headers=headers, json=payload) as response:
-            print(f"Response status: {response.status}")
             if response.status == 201:
                 token_response = await response.json()
                 return token_response.get(

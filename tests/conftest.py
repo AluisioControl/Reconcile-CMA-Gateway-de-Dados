@@ -3,6 +3,7 @@ import pytest
 import pytest_asyncio
 from app.login import get_auth_token
 
+gateways = [{'id': '56B742EF-AED1-EF11-88F9-6045BDFE79DC', 'name': 'Gateway 01', 'ip': '100.201.0.5', 'active': True, 'substation': {'id': '09D1D879-7EB2-EF11-88F8-6045BDFE79DC', 'name': 'Taubaté', 'active': True, 'sapAbbreviation': 'TAU'}}, {'id': '32E7A694-93EB-EF11-88FB-6045BDFE79DC', 'name': 'Gateway 02', 'ip': '152.654.236.987', 'active': True, 'substation': {'id': '09D1D879-7EB2-EF11-88F8-6045BDFE79DC', 'name': 'Taubaté', 'active': True, 'sapAbbreviation': 'TAU'}}]
 
 HardwaresList = [
     {

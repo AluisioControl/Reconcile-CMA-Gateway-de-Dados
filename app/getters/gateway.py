@@ -35,7 +35,7 @@ async def fetch_all_gateways(host, auth_token):
                 )
 
 
-def parse_gateway(data_gateway):
+def parse_gateway_data(data_gateway):
     """
     Converte os campos do gateway para o novo formato especificado.
 
