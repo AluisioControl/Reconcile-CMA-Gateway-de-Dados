@@ -21,9 +21,9 @@ async def test_fetch_sensors_modbus(auth_token, examples):
 @pytest.mark.asyncio
 async def test_fetch_sensors_dnp(auth_token, examples):
     host = os.environ["GWTDADOS_HOST"]
-    hardware_id = examples["valid_hardware_id_dnp3"]
+    hardware_id = examples["valid_hardware_id_dnp"]
     data_sensors = await fetch_sensors_dnp(host, auth_token, hardware_id=hardware_id)
-    print("sensor dnp3", data_sensors)
+    print("sensor dnp", data_sensors)
     assert len(data_sensors) > 0
 
 
@@ -31,21 +31,20 @@ async def test_fetch_sensors_dnp(auth_token, examples):
 async def test_fetch_sensor_modbus_by_id(auth_token, examples):
     host = os.environ["GWTDADOS_HOST"]
     hardware_id = examples["valid_hardware_id"]
-    sensor_id = examples["valid_sensor_id"]
+    sensor_modbus_id = examples["valid_sensor_modbus_id"]
     data_sensor = await fetch_sensor_modbus_by_id(
-        host, auth_token, sensor_id=hardware_id, sensor_id=sensor_id
+        host, auth_token, sensor_modbus_id=sensor_modbus_id
     )
-    print(data_sensor)
     assert data_sensor is not None
 
 
 @pytest.mark.asyncio
 async def test_fetch_sensor_dnp_by_id(auth_token, examples):
     host = os.environ["GWTDADOS_HOST"]
-    hardware_id = examples["valid_hardware_id_dnp3"]
-    sensor_id = examples["valid_sensor_id_dnp3"]
+    hardware_id = examples["valid_hardware_id_dnp"]
+    sensor_dnp_id = examples["valid_sensor_dnp_id"]
     data_sensor = await fetch_sensor_dnp_by_id(
-        host, auth_token, hardware_id=hardware_id, sensor_id=sensor_id
+        host, auth_token, sensor_dnp_id=sensor_dnp_id
     )
-    print("sensor dnp3 by id", data_sensor)
+    print("sensor dnp by id", data_sensor)
     assert data_sensor is not None

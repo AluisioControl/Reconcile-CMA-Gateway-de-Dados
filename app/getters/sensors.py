@@ -29,7 +29,7 @@ async def fetch_sensors_modbus(
         model (str, optional): Filtro pelo modelo do sensor. Padrão: None.
         gateway_name (str, optional): Filtro pelo nome do gateway. Padrão: None.
         type (str, optional): Tipo do sensor. Padrão: "SENSOR".
-        actualization_period (str, optional): Período de atualização. Padrão: "MINUTES".
+        actualization_period (str, optional): Período de atualização. Padrão: "MINUTES".  options: "MILLISECONDS", "SECONDS", "MINUTES" or "HOURS"
         active (bool, optional): Filtrar apenas sensores ativos (`True`) ou inativos (`False`). Padrão: None.
         manufacturer_id (str, optional): Filtro pelo ID do fabricante. Padrão: None.
         hardware_id (str, optional): Filtro pelo ID do hardware. Padrão: None.
@@ -82,7 +82,7 @@ async def fetch_sensors_dnp(
     model: str = None,
     gateway_name: str = None,
     type: str = "SENSOR",
-    actualization_period: str = "MINUTES",
+    actualization_period: str = "MINUTES", 
     active: bool = None,
     manufacturer_id: str = "",
     hardware_id: str = "",
@@ -101,7 +101,7 @@ async def fetch_sensors_dnp(
         model (str, optional): Filtro pelo modelo do sensor. Padrão: None.
         gateway_name (str, optional): Filtro pelo nome do gateway. Padrão: None.
         type (str, optional): Tipo de sensor. Padrão: "SENSOR".
-        actualization_period (str, optional): Período de atualização. Padrão: "MINUTES".
+        actualization_period (str, optional): Período de atualização. Padrão: "MINUTES". options: "MILLISECONDS", "SECONDS", "MINUTES" or "HOURS"
         active (bool, optional): Filtrar apenas sensores ativos (`True`) ou inativos (`False`). Padrão: None.
         manufacturer_id (str, optional): Filtro pelo ID do fabricante. Padrão: "".
         hardware_id (str, optional): Filtro pelo ID do hardware. Padrão: "".
@@ -292,7 +292,7 @@ async def fetch_sensor_dnp_by_id(host, auth_token, sensor_dnp_id):
         Exception: Se a requisição falhar ou retornar um status diferente de 200.
 
     Example:
-        >>> sensor_dnp = await fetch_sensor_dnp_by_id("https://api.example.com", "seu_token_aqui", "321321321")
+        >>> sensor_dnp = await fetch_sensor_dnp_by_id("https://api.example.com", "seu_token_aqui", "AF345D34-0DEC-EF11-88FB-6045BDFE79DC")
     """
     url = f"{host}/sensors-dnp/{sensor_dnp_id}"
     headers = {"Authorization": f"Bearer {auth_token}"}
@@ -304,5 +304,5 @@ async def fetch_sensor_dnp_by_id(host, auth_token, sensor_dnp_id):
                 return sensor_dnp_info
             else:
                 raise Exception(
-                    f"Failed to fetch sensor DNP by ID, status code: {response.status}"
+                    f"Failed to fetch sensor DNP by ID={sensor_dnp_id}, status code: {response.status}"
                 )

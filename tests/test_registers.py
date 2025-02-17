@@ -33,8 +33,8 @@ async def test_fetch_register_modbus_by_id(auth_token, examples):
 @pytest.mark.asyncio
 async def test_fetch_registers_dnp_by_sensor(auth_token, examples):
     host = os.environ["GWTDADOS_HOST"]
-    sensor_dnp_id = examples["valid_sensor_dnp3_id"]
-    print("sensor_dnp3_id", sensor_dnp_id)
+    sensor_dnp_id = examples["valid_sensor_dnp_id"]
+    print("sensor_dnp_id", sensor_dnp_id)
     data_registers = await fetch_registers_dnp(
         host, auth_token, sensor_dnp_id=sensor_dnp_id
     )
@@ -44,7 +44,7 @@ async def test_fetch_registers_dnp_by_sensor(auth_token, examples):
 @pytest.mark.asyncio
 async def test_fetch_register_dnp_by_id(auth_token, examples):
     host = os.environ["GWTDADOS_HOST"]
-    register_dnp_id = examples["valid_register_dnp3_id"]
+    register_dnp_id = examples["valid_register_dnp_id"]
     print("register_dnp_id", register_dnp_id)
     data_registers = await fetch_register_dnp_by_id(
         host, auth_token, register_dnp_id=register_dnp_id

@@ -105,7 +105,7 @@ HardwaresList = [
     },
 ]
 
-sensors_dnp3 = [
+sensors_dnp = [
     {
         "id": "AF345D34-0DEC-EF11-88FB-6045BDFE79DC",
         "name": "teste",
@@ -135,7 +135,7 @@ sensors_dnp3 = [
     }
 ]
 
-registers_dnp3 = {
+registers_dnp = {
     "content": [
         {
             "id": "6306D364-0DEC-EF11-88FB-6045BDFE79DC",
@@ -467,13 +467,11 @@ async def examples():
         "password": os.getenv("GWTDADOS_PASSWORD"),
         "valid_gateway_id": "56B742EF-AED1-EF11-88F9-6045BDFE79DC",
         "valid_hardware_id": "6FE59604-1214-48D3-A6FE-6190A38653CE",
-        "valid_hardware_id_dnp3": "78CACAF7-0CEC-EF11-88FB-6045BDFE79DC",
-        "valid_sensor_id": "6FE59604-1214-48D3-A6FE-6190A38653CE",
+        "valid_hardware_id_dnp": "78CACAF7-0CEC-EF11-88FB-6045BDFE79DC",
         "valid_sensor_modbus_id": "17BC1946-AF94-42AC-BC05-B6141C001272",
-        "valid_sensor_dnp3_id": "AF345D34-0DEC-EF11-88FB-6045BDFE79DC",
-        "valid_register_dnp3_id": "6306D364-0DEC-EF11-88FB-6045BDFE79DC",
+        "valid_sensor_dnp_id": "AF345D34-0DEC-EF11-88FB-6045BDFE79DC",
+        "valid_register_dnp_id": "6306D364-0DEC-EF11-88FB-6045BDFE79DC",
         "valid_register_modbus_id": "158F89BE-B025-4E93-9359-FDD0ADBD2408",
-        "hardwares": HardwaresList,
     }
 
 

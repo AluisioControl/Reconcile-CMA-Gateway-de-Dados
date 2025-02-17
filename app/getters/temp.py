@@ -84,13 +84,16 @@ async def collect_registers_dnp(sensor_dnp_id):
     registers_data = await fetch_registers_dnp(
         host=configs.host, auth_token=configs.auth_token, sensor_dnp_id=sensor_dnp_id)
     print("registers_data", registers_data)
-    for register_data in registers_data["content"]:
+
+    async def fetch_and_parse_register(register_data):
         print("\tregister_data", register_data)
         register_data = await fetch_register_dnp_by_id(
             host=configs.host, auth_token=configs.auth_token, register_dnp_id=register_data["id"])
-        register_parsed = parse_register_dnp_data(register_data)
-        registers.append(register_parsed)
-        if DEBUG: break
+        return parse_register_dnp_data(register_data)
+
+    tasks = [fetch_and_parse_register(register_data) for register_data in registers_data["content"]]
+    registers = await asyncio.gather(*tasks)
+    
     print(registers)
     return registers
 
