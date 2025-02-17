@@ -34,6 +34,8 @@ import asyncio
 
 import json
 
+from asyncio import Semaphore
+
 
 def multiplex_dicts(primary_list: list[dict], secondary_list: list[dict]) -> list[dict]:
     """
@@ -61,39 +63,44 @@ def combine_primary_with_secondary(
 
 DEBUG=False
 
+semaphore = Semaphore(3)
+
+async def fetch_and_parse_register_modbus(register_data):
+    print("\tregister_data", register_data)
+    async with semaphore:
+        register_data = await fetch_register_modbus_by_id(
+            host=configs.host, auth_token=configs.auth_token, register_modbus_id=register_data["id"])
+        return parse_register_modbus_data(register_data)
+
+
 async def collect_registers_modbus(sensor_modbus_id):
     registers = []
     print("sensor_modbus_id", sensor_modbus_id)
     registers_data = await fetch_registers_modbus(
         host=configs.host, auth_token=configs.auth_token, sensor_modbus_id=sensor_modbus_id)
-    print("registers_data", registers_data)
-    for register_data in registers_data["content"]:
-        print("\t\t\tregister_data", register_data)
-        register_data = await fetch_register_modbus_by_id(
-            host=configs.host, auth_token=configs.auth_token, register_modbus_id=register_data["id"])
-        register_parsed = parse_register_modbus_data(register_data)
-        registers.append(register_parsed)
-        if DEBUG: break
+    # processar os registros em paralelo
+    tasks = [fetch_and_parse_register_modbus(register_data) for register_data in registers_data["content"]]
+    registers = await asyncio.gather(*tasks)
     print(registers)
     return registers
 
+async def fetch_and_parse_register_dnp(register_data):
+    print("\tregister_data", register_data)
+    async with semaphore:
+        register_data = await fetch_register_dnp_by_id(
+            host=configs.host, auth_token=configs.auth_token, register_dnp_id=register_data["id"])
+    return parse_register_dnp_data(register_data)
 
 async def collect_registers_dnp(sensor_dnp_id):
     registers = []
     print("sensor_dnp_id", sensor_dnp_id)
     registers_data = await fetch_registers_dnp(
         host=configs.host, auth_token=configs.auth_token, sensor_dnp_id=sensor_dnp_id)
-    print("registers_data", registers_data)
-    for register_data in registers_data["content"]:
-        print("\tregister_data", register_data)
-        register_data = await fetch_register_dnp_by_id(
-            host=configs.host, auth_token=configs.auth_token, register_dnp_id=register_data["id"])
-        register_parsed = parse_register_dnp_data(register_data)
-        registers.append(register_parsed)
-        if DEBUG: break
+    # processar os registros em paralelo
+    tasks = [fetch_and_parse_register_dnp(register_data) for register_data in registers_data["content"]]
+    registers = await asyncio.gather(*tasks)
     print(registers)
     return registers
-
 
 async def main():
     all_flat_data = []
