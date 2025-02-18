@@ -1,7 +1,10 @@
 import asyncio
 import json
 import os
+import sqlite3
 from asyncio import Semaphore
+
+import pandas as pd
 
 from app.getters.gateway import (
     fetch_all_gateways,
@@ -232,6 +235,15 @@ async def main():
     # Salvar os dados em um arquivo JSON
     with open("data.json", "w") as f:
         json.dump(all_flat_data, f)
+
+    # Criar um DataFrame
+    df = pd.DataFrame(all_flat_data)
+
+    # Conectar ao banco SQLite (ou criar um novo se não existir)
+    conn = sqlite3.connect("dados.db")
+
+    # Salvar o DataFrame no banco, criando a tabela "dados" (ou sobrescrevendo se já existir)
+    df.to_sql("dados", conn, if_exists="replace", index=False)
 
 
 if __name__ == "__main__":
