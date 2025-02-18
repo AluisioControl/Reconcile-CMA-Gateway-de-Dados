@@ -1,10 +1,12 @@
 import os
+
 import pytest
+
 from app.getters.sensors import (
-    fetch_sensors_modbus,
-    fetch_sensors_dnp,
-    fetch_sensor_modbus_by_id,
     fetch_sensor_dnp_by_id,
+    fetch_sensor_modbus_by_id,
+    fetch_sensors_dnp,
+    fetch_sensors_modbus,
 )
 
 

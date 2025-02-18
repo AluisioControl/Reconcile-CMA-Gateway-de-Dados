@@ -1,6 +1,8 @@
 import os
+
 import pytest
 import pytest_asyncio
+
 from app.login import get_auth_token
 
 gateways = [
@@ -456,6 +458,110 @@ registers_modbus = [
         },
     },
 ]
+
+register_modbus_detail = {
+    "id": "158F89BE-B025-4E93-9359-FDD0ADBD2408",
+    "createdAt": "2025-02-07T13:14:54.170Z",
+    "updatedAt": "2025-02-07T13:14:54.170Z",
+    "userCreatedId": "B2D0D879-7EB2-EF11-88F8-6045BDFE79DC",
+    "userUpdatedId": "B2D0D879-7EB2-EF11-88F8-6045BDFE79DC",
+    "sensorModbusId": "17BC1946-AF94-42AC-BC05-B6141C001272",
+    "registerTypeId": "DC39658D-D6D4-EF11-88FA-6045BDFE79DC",
+    "sensorTypeId": "02D1D879-7EB2-EF11-88F8-6045BDFE79DC",
+    "name": "Registrador 1",
+    "description": "Descrição do registrador",
+    "addressSlave": 6,
+    "addressRegister": 3952,
+    "registerModbusType": "COIL_STATUS",
+    "registerDataFormat": "TWO_BYTE_INT_UNSIGNED",
+    "bit": 15,
+    "multiplier": 1,
+    "additive": 0,
+    "active": True,
+    "sensorModbus": {
+        "id": "17BC1946-AF94-42AC-BC05-B6141C001272",
+        "name": "Sensor 1",
+        "description": "Descrição do sensor",
+        "model": "ModeloX",
+        "ip": "0000001245221787",
+        "port": 20000,
+        "type": "SENSOR",
+        "attempts": 2,
+        "timeLimit": 500,
+        "actualizationPeriod": "MINUTES",
+        "actualizationTime": 5,
+        "maxRegisterRead": 125,
+        "maxRegisterWrite": 120,
+        "maxRegisterBitsRead": 2000,
+        "active": True,
+        "manufacturer": {
+            "id": "6917C79D-D6D4-EF11-88FA-6045BDFE79DC",
+            "name": "Fabricante 01",
+            "active": True,
+        },
+    },
+    "registerType": {
+        "id": "DC39658D-D6D4-EF11-88FA-6045BDFE79DC",
+        "name": "Tipo 02",
+        "active": True,
+    },
+    "sensorType": {
+        "id": "02D1D879-7EB2-EF11-88F8-6045BDFE79DC",
+        "name": "TEM01",
+        "active": True,
+    },
+}
+
+register_dnp_detail = {
+    "id": "6306D364-0DEC-EF11-88FB-6045BDFE79DC",
+    "createdAt": "2025-02-16T02:26:15.200Z",
+    "updatedAt": "2025-02-16T03:10:34.915Z",
+    "userCreatedId": "3481F89B-D7CD-EF11-88F9-6045BDFE79DC",
+    "userUpdatedId": "3481F89B-D7CD-EF11-88F9-6045BDFE79DC",
+    "sensorDnpId": "AF345D34-0DEC-EF11-88FB-6045BDFE79DC",
+    "registerTypeId": "DC39658D-D6D4-EF11-88FA-6045BDFE79DC",
+    "sensorTypeId": "718E03C6-D6D4-EF11-88FA-6045BDFE79DC",
+    "name": "testador",
+    "description": "retorno",
+    "index": 0,
+    "timeOn": 0,
+    "timeOff": 0,
+    "registerDataType": 0,
+    "registerControlCommand": 3,
+    "active": True,
+    "sensorDnp": {
+        "id": "AF345D34-0DEC-EF11-88FB-6045BDFE79DC",
+        "name": "teste",
+        "description": "testando protocolo",
+        "model": "xps1000",
+        "ip": "192.168.55.33",
+        "port": 20000,
+        "type": "SENSOR",
+        "attempts": 2,
+        "timeLimit": 500,
+        "actualizationPeriod": "MINUTES",
+        "pollRbePeriod": 5,
+        "pollStaticPeriod": 30,
+        "addressSource": 1,
+        "addressSlave": 2,
+        "active": True,
+        "manufacturer": {
+            "id": "6917C79D-D6D4-EF11-88FA-6045BDFE79DC",
+            "name": "Fabricante 01",
+            "active": True,
+        },
+    },
+    "registerType": {
+        "id": "DC39658D-D6D4-EF11-88FA-6045BDFE79DC",
+        "name": "Tipo 02",
+        "active": True,
+    },
+    "sensorType": {
+        "id": "718E03C6-D6D4-EF11-88FA-6045BDFE79DC",
+        "name": "Tipo Sensor 01",
+        "active": True,
+    },
+}
 
 
 @pytest_asyncio.fixture(scope="session")

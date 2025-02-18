@@ -27,20 +27,27 @@ async def fetch_register_modbus_by_id(
     url = f"{host}/registers-modbus/{register_modbus_id}"
     headers = {"Authorization": f"Bearer {auth_token}"}
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers) as response:
-            if response.status == 200:
-                return await response.json()
-            raise Exception(
-                f"Falha ao buscar registro Modbus. Código de status: {response.status}"
-            )
+    # Tenta até 3 vezes se der timeout
+    for attempt in range(1, 4):
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, headers=headers) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    raise Exception(
+                        f"Falha ao buscar registro Modbus. Código de status: {response.status}"
+                    )
+        except aiohttp.client_exceptions.ConnectionTimeoutError:
+            print(f"Tentativa {attempt}: deu timeout, bora tentar de novo...")
+            if attempt == 3:
+                raise Exception("Timeout persistente após 3 tentativas")
 
 
 async def fetch_registers_modbus(
     host: str,
     auth_token: str,
-    page: int = 0,
-    size: int = 10,
+    page: int = None,
+    size: int = None,
     name: str = "",
     register_modbus_type: str = "",
     register_data_format: str = "",
@@ -84,10 +91,11 @@ async def fetch_registers_modbus(
         ... )
     """
 
-    params = {
-        "page": page,
-        "size": size,
-    }
+    params = {}
+    if page is not None:
+        params["page"] = page
+    if size is not None:
+        params["size"] = size
     if name:
         params["name"] = name
     if register_modbus_type:
@@ -120,8 +128,8 @@ async def fetch_registers_modbus(
 async def fetch_registers_dnp(
     host: str,
     auth_token: str,
-    page: int = 0,
-    size: int = 10,
+    page: int = None,
+    size: int = None,
     name: str = "",
     register_data_type: str = "",
     register_control_command: str = "",
@@ -165,10 +173,11 @@ async def fetch_registers_dnp(
         ... )
     """
 
-    params = {
-        "page": page,
-        "size": size,
-    }
+    params = {}
+    if page is not None:
+        params["page"] = page
+    if size is not None:
+        params["size"] = size
     if name:
         params["name"] = name
     if register_data_type:
@@ -254,36 +263,80 @@ def parse_register_modbus_data(data_register_modbus):
         "description_reg_mod": data_register_modbus.get("description", None),
         "addressSlave_reg_mod": data_register_modbus.get("addressSlave", None),
         "addressRegister_reg_mod": data_register_modbus.get("addressRegister", None),
-        "registerModbusType_reg_mod": data_register_modbus.get("registerModbusType", None),
-        "registerDataFormat_reg_mod": data_register_modbus.get("registerDataFormat", None),
+        "registerModbusType_reg_mod": data_register_modbus.get(
+            "registerModbusType", None
+        ),
+        "registerDataFormat_reg_mod": data_register_modbus.get(
+            "registerDataFormat", None
+        ),
         "bit_reg_mod": data_register_modbus.get("bit", None),
         "multiplier_reg_mod": data_register_modbus.get("multiplier", None),
         "additive_reg_mod": data_register_modbus.get("additive", None),
         "active_reg_mod": data_register_modbus.get("active", None),
-        "id_sen_reg_mod": data_register_modbus.get("sensor", {}).get("id", None),
-        "name_sen_reg_mod": data_register_modbus.get("sensor", {}).get("name", None),
-        "description_sen_reg_mod": data_register_modbus.get("sensor", {}).get("description", None),
-        "model_sen_reg_mod": data_register_modbus.get("sensor", {}).get("model", None),
-        "ip_sen_reg_mod": data_register_modbus.get("sensor", {}).get("ip", None),
-        "port_sen_reg_mod": data_register_modbus.get("sensor", {}).get("port", None),
-        "type_sen_reg_mod": data_register_modbus.get("sensor", {}).get("type", None),
-        "attempts_sen_reg_mod": data_register_modbus.get("sensor", {}).get("attempts", None),
-        "timeLimit_sen_reg_mod": data_register_modbus.get("sensor", {}).get("timeLimit", None),
-        "actualizationPeriod_sen_reg_mod": data_register_modbus.get("sensor", {}).get("actualizationPeriod", None),
-        "actualizationTime_sen_reg_mod": data_register_modbus.get("sensor", {}).get("actualizationTime", None),
-        "maxRegisterRead_sen_reg_mod": data_register_modbus.get("sensor", {}).get("maxRegisterRead", None),
-        "maxRegisterWrite_sen_reg_mod": data_register_modbus.get("sensor", {}).get("maxRegisterWrite", None),
-        "maxRegisterBitsRead_sen_reg_mod": data_register_modbus.get("sensor", {}).get("maxRegisterBitsRead", None),
-        "active_sen_reg_mod": data_register_modbus.get("sensor", {}).get("active", None),
-        "id_man_reg_mod": data_register_modbus.get("manufacturer", {}).get("id", None),
-        "name_man_reg_mod": data_register_modbus.get("manufacturer", {}).get("name", None),
-        "active_man_reg_mod": data_register_modbus.get("manufacturer", {}).get("active", None),
+        "id_sen_reg_mod": data_register_modbus.get("sensorModbus", {}).get("id", None),
+        "name_sen_reg_mod": data_register_modbus.get("sensorModbus", {}).get(
+            "name", None
+        ),
+        "description_sen_reg_mod": data_register_modbus.get("sensorModbus", {}).get(
+            "description", None
+        ),
+        "model_sen_reg_mod": data_register_modbus.get("sensorModbus", {}).get(
+            "model", None
+        ),
+        "ip_sen_reg_mod": data_register_modbus.get("sensorModbus", {}).get("ip", None),
+        "port_sen_reg_mod": data_register_modbus.get("sensorModbus", {}).get(
+            "port", None
+        ),
+        "type_sen_reg_mod": data_register_modbus.get("sensorModbus", {}).get(
+            "type", None
+        ),
+        "attempts_sen_reg_mod": data_register_modbus.get("sensorModbus", {}).get(
+            "attempts", None
+        ),
+        "timeLimit_sen_reg_mod": data_register_modbus.get("sensorModbus", {}).get(
+            "timeLimit", None
+        ),
+        "actualizationPeriod_sen_reg_mod": data_register_modbus.get(
+            "sensorModbus", {}
+        ).get("actualizationPeriod", None),
+        "actualizationTime_sen_reg_mod": data_register_modbus.get(
+            "sensorModbus", {}
+        ).get("actualizationTime", None),
+        "maxRegisterRead_sen_reg_mod": data_register_modbus.get("sensorModbus", {}).get(
+            "maxRegisterRead", None
+        ),
+        "maxRegisterWrite_sen_reg_mod": data_register_modbus.get(
+            "sensorModbus", {}
+        ).get("maxRegisterWrite", None),
+        "maxRegisterBitsRead_sen_reg_mod": data_register_modbus.get(
+            "sensorModbus", {}
+        ).get("maxRegisterBitsRead", None),
+        "active_sen_reg_mod": data_register_modbus.get("sensorModbus", {}).get(
+            "active", None
+        ),
+        "id_man_reg_mod": data_register_modbus.get("sensorModbus", {})
+        .get("manufacturer", {})
+        .get("id", None),
+        "name_man_reg_mod": data_register_modbus.get("sensorModbus", {})
+        .get("manufacturer", {})
+        .get("name", None),
+        "active_man_reg_mod": data_register_modbus.get("sensorModbus", {})
+        .get("manufacturer", {})
+        .get("active", None),
         "id_reg_reg_mod": data_register_modbus.get("registerType", {}).get("id", None),
-        "name_reg_reg_mod": data_register_modbus.get("registerType", {}).get("name", None),
-        "active_reg_reg_mod": data_register_modbus.get("registerType", {}).get("active", None),
+        "name_reg_reg_mod": data_register_modbus.get("registerType", {}).get(
+            "name", None
+        ),
+        "active_reg_reg_mod": data_register_modbus.get("registerType", {}).get(
+            "active", None
+        ),
         "id_sen_reg_mod": data_register_modbus.get("sensorType", {}).get("id", None),
-        "name_sen_reg_mod": data_register_modbus.get("sensorType", {}).get("name", None),
-        "active_sen_reg_mod": data_register_modbus.get("sensorType", {}).get("active", None),
+        "name_sen_reg_mod": data_register_modbus.get("sensorType", {}).get(
+            "name", None
+        ),
+        "active_sen_reg_mod": data_register_modbus.get("sensorType", {}).get(
+            "active", None
+        ),
     }
     return parsed_data
 
@@ -313,29 +366,49 @@ def parse_register_dnp_data(data_reg_dnp3):
         "timeOn_reg_dnp3": data_reg_dnp3.get("timeOn", None),
         "timeOff_reg_dnp3": data_reg_dnp3.get("timeOff", None),
         "registerDataType_reg_dnp3": data_reg_dnp3.get("registerDataType", None),
-        "registerControlCommand_reg_dnp3": data_reg_dnp3.get("registerControlCommand", None),
+        "registerControlCommand_reg_dnp3": data_reg_dnp3.get(
+            "registerControlCommand", None
+        ),
         "active_reg_dnp3": data_reg_dnp3.get("active", None),
-        "id_dnp_reg_dnp3": data_reg_dnp3.get("dnp", {}).get("id", None),
-        "name_dnp_reg_dnp3": data_reg_dnp3.get("dnp", {}).get("name", None),
-        "description_dnp_reg_dnp3": data_reg_dnp3.get("dnp", {}).get("description", None),
-        "model_dnp_reg_dnp3": data_reg_dnp3.get("dnp", {}).get("model", None),
-        "ip_dnp_reg_dnp3": data_reg_dnp3.get("dnp", {}).get("ip", None),
-        "port_dnp_reg_dnp3": data_reg_dnp3.get("dnp", {}).get("port", None),
-        "type_dnp_reg_dnp3": data_reg_dnp3.get("dnp", {}).get("type", None),
-        "attempts_dnp_reg_dnp3": data_reg_dnp3.get("dnp", {}).get("attempts", None),
-        "timeLimit_dnp_reg_dnp3": data_reg_dnp3.get("dnp", {}).get("timeLimit", None),
-        "actualizationPeriod_dnp_reg_dnp3": data_reg_dnp3.get("dnp", {}).get("actualizationPeriod", None),
-        "pollRbePeriod_dnp_reg_dnp3": data_reg_dnp3.get("dnp", {}).get("pollRbePeriod", None),
-        "pollStaticPeriod_dnp_reg_dnp3": data_reg_dnp3.get("dnp", {}).get("pollStaticPeriod", None),
-        "addressSource_dnp_reg_dnp3": data_reg_dnp3.get("dnp", {}).get("addressSource", None),
-        "addressSlave_dnp_reg_dnp3": data_reg_dnp3.get("dnp", {}).get("addressSlave", None),
-        "active_dnp_reg_dnp3": data_reg_dnp3.get("dnp", {}).get("active", None),
+        "id_dnp_reg_dnp3": data_reg_dnp3.get("sensorDnp", {}).get("id", None),
+        "name_dnp_reg_dnp3": data_reg_dnp3.get("sensorDnp", {}).get("name", None),
+        "description_dnp_reg_dnp3": data_reg_dnp3.get("sensorDnp", {}).get(
+            "description", None
+        ),
+        "model_dnp_reg_dnp3": data_reg_dnp3.get("sensorDnp", {}).get("model", None),
+        "ip_dnp_reg_dnp3": data_reg_dnp3.get("sensorDnp", {}).get("ip", None),
+        "port_dnp_reg_dnp3": data_reg_dnp3.get("sensorDnp", {}).get("port", None),
+        "type_dnp_reg_dnp3": data_reg_dnp3.get("sensorDnp", {}).get("type", None),
+        "attempts_dnp_reg_dnp3": data_reg_dnp3.get("sensorDnp", {}).get(
+            "attempts", None
+        ),
+        "timeLimit_dnp_reg_dnp3": data_reg_dnp3.get("sensorDnp", {}).get(
+            "timeLimit", None
+        ),
+        "actualizationPeriod_dnp_reg_dnp3": data_reg_dnp3.get("sensorDnp", {}).get(
+            "actualizationPeriod", None
+        ),
+        "pollRbePeriod_dnp_reg_dnp3": data_reg_dnp3.get("sensorDnp", {}).get(
+            "pollRbePeriod", None
+        ),
+        "pollStaticPeriod_dnp_reg_dnp3": data_reg_dnp3.get("sensorDnp", {}).get(
+            "pollStaticPeriod", None
+        ),
+        "addressSource_dnp_reg_dnp3": data_reg_dnp3.get("sensorDnp", {}).get(
+            "addressSource", None
+        ),
+        "addressSlave_dnp_reg_dnp3": data_reg_dnp3.get("sensorDnp", {}).get(
+            "addressSlave", None
+        ),
+        "active_dnp_reg_dnp3": data_reg_dnp3.get("sensorDnp", {}).get("active", None),
         "id_man_reg_dnp3": data_reg_dnp3.get("manufacturer", {}).get("id", None),
         "name_man_reg_dnp3": data_reg_dnp3.get("manufacturer", {}).get("name", None),
         "active_man_reg_mod": data_reg_dnp3.get("manufacturer", {}).get("active", None),
         "id_reg_reg_dnp3": data_reg_dnp3.get("registerType", {}).get("id", None),
         "name_reg_reg_dnp3": data_reg_dnp3.get("registerType", {}).get("name", None),
-        "active_reg_reg_dnp_dnp3": data_reg_dnp3.get("registerType", {}).get("active", None),
+        "active_reg_reg_dnp_dnp3": data_reg_dnp3.get("registerType", {}).get(
+            "active", None
+        ),
         "id_sen_reg_dnp3": data_reg_dnp3.get("sensorType", {}).get("id", None),
         "name_sen_reg_dnp3": data_reg_dnp3.get("sensorType", {}).get("name", None),
         "active_sen_reg_dnp3": data_reg_dnp3.get("sensorType", {}).get("active", None),

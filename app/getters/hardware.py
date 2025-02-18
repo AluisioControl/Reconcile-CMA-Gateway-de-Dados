@@ -1,5 +1,6 @@
-import aiohttp
 import asyncio
+
+import aiohttp
 
 
 async def fetch_hardwares_by_gateway(

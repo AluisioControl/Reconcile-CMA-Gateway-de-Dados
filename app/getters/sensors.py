@@ -82,7 +82,7 @@ async def fetch_sensors_dnp(
     model: str = None,
     gateway_name: str = None,
     type: str = "SENSOR",
-    actualization_period: str = "MINUTES", 
+    actualization_period: str = "MINUTES",
     active: bool = None,
     manufacturer_id: str = "",
     hardware_id: str = "",

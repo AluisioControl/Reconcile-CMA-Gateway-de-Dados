@@ -1,40 +1,40 @@
-from abc import ABC, abstractmethod
-from .login import get_auth_token
+import asyncio
+import json
+import os
+from asyncio import Semaphore
+
 from app.getters.gateway import (
     fetch_all_gateways,
     fetch_gateway_by_id,
     parse_gateway_data,
 )
 from app.getters.hardware import (
-    fetch_hardwares_by_gateway,
     fetch_hardware_by_id,
+    fetch_hardwares_by_gateway,
     parse_hardware_data,
 )
-from app.getters.sensors import (
-    fetch_sensors_modbus,
-    fetch_sensor_modbus_by_id,
-    parse_sensor_modbus_data,
-    parse_sensor_dnp_data,
-    fetch_sensors_dnp,
-    fetch_sensor_dnp_by_id,
-)
 from app.getters.register import (
-    fetch_register_modbus_by_id,
-    fetch_registers_modbus,
-    parse_register_modbus_data,
     fetch_register_dnp_by_id,
+    fetch_register_modbus_by_id,
     fetch_registers_dnp,
-    parse_register_dnp_data
+    fetch_registers_modbus,
+    parse_register_dnp_data,
+    parse_register_modbus_data,
+)
+from app.getters.sensors import (
+    fetch_sensor_dnp_by_id,
+    fetch_sensor_modbus_by_id,
+    fetch_sensors_dnp,
+    fetch_sensors_modbus,
+    parse_sensor_dnp_data,
+    parse_sensor_modbus_data,
 )
 
-
-import os
 from .settings import configs
-import asyncio
 
-import json
-
-from asyncio import Semaphore
+DEBUG = False
+MAX_PAGE_SIZE = 2
+semaphore = Semaphore(36)
 
 
 def multiplex_dicts(primary_list: list[dict], secondary_list: list[dict]) -> list[dict]:
@@ -61,46 +61,63 @@ def combine_primary_with_secondary(
     """
     return [{**primary, **secondary} for secondary in secondary_list]
 
-DEBUG=False
-
-semaphore = Semaphore(3)
 
 async def fetch_and_parse_register_modbus(register_data):
-    print("\tregister_data", register_data)
     async with semaphore:
         register_data = await fetch_register_modbus_by_id(
-            host=configs.host, auth_token=configs.auth_token, register_modbus_id=register_data["id"])
+            host=configs.host,
+            auth_token=configs.auth_token,
+            register_modbus_id=register_data["id"],
+        )
         return parse_register_modbus_data(register_data)
 
 
 async def collect_registers_modbus(sensor_modbus_id):
     registers = []
-    print("sensor_modbus_id", sensor_modbus_id)
     registers_data = await fetch_registers_modbus(
-        host=configs.host, auth_token=configs.auth_token, sensor_modbus_id=sensor_modbus_id)
+        host=configs.host,
+        auth_token=configs.auth_token,
+        sensor_modbus_id=sensor_modbus_id,
+        size=MAX_PAGE_SIZE,
+    )
     # processar os registros em paralelo
-    tasks = [fetch_and_parse_register_modbus(register_data) for register_data in registers_data["content"]]
+    tasks = [
+        fetch_and_parse_register_modbus(register_data)
+        for register_data in registers_data["content"]
+    ]
+    print("\t\t - Coletando ", len(tasks), " registros")
     registers = await asyncio.gather(*tasks)
-    print(registers)
     return registers
 
+
 async def fetch_and_parse_register_dnp(register_data):
-    print("\tregister_data", register_data)
     async with semaphore:
         register_data = await fetch_register_dnp_by_id(
-            host=configs.host, auth_token=configs.auth_token, register_dnp_id=register_data["id"])
+            host=configs.host,
+            auth_token=configs.auth_token,
+            register_dnp_id=register_data["id"],
+        )
     return parse_register_dnp_data(register_data)
+
 
 async def collect_registers_dnp(sensor_dnp_id):
     registers = []
     print("sensor_dnp_id", sensor_dnp_id)
     registers_data = await fetch_registers_dnp(
-        host=configs.host, auth_token=configs.auth_token, sensor_dnp_id=sensor_dnp_id)
+        host=configs.host,
+        auth_token=configs.auth_token,
+        sensor_dnp_id=sensor_dnp_id,
+        size=MAX_PAGE_SIZE,
+    )
     # processar os registros em paralelo
-    tasks = [fetch_and_parse_register_dnp(register_data) for register_data in registers_data["content"]]
+    tasks = [
+        fetch_and_parse_register_dnp(register_data)
+        for register_data in registers_data["content"]
+    ]
+    print("\t\t\t - Coletando ", len(tasks), " registros")
     registers = await asyncio.gather(*tasks)
-    print(registers)
     return registers
+
 
 async def main():
     all_flat_data = []
@@ -118,9 +135,10 @@ async def main():
         gateway_parsed = parse_gateway_data(gateway_data)
         hardware_combine_sensors_modbus = []
         hardware_combine_sensors_dnp = []
-        for hardware in await fetch_hardwares_by_gateway(
+        hardwares = await fetch_hardwares_by_gateway(
             host=configs.host, auth_token=configs.auth_token, cma_gateway_id=gateway_id
-        ):
+        )
+        for hardware in hardwares:
             hardware_id = hardware["id"]
             print("\t hardware_id", hardware_id)
             hardware_data = await fetch_hardware_by_id(
@@ -156,8 +174,11 @@ async def main():
                     sensors_parsed.append(sensor_parsed)
                     # coletar os registros de cada sensor
                     registers_modbus = await collect_registers_modbus(sensor_id)
-                    sensor_combine_registers_modbus =combine_primary_with_secondary(sensor_parsed, registers_modbus)
-                    if DEBUG: break
+                    sensor_combine_registers_modbus = combine_primary_with_secondary(
+                        sensor_parsed, registers_modbus
+                    )
+                    if DEBUG:
+                        break
             # combinar o resultado de hardware com o resultado de sensores
             hardware_combine_sensors_modbus += combine_primary_with_secondary(
                 hardware_parsed, sensor_combine_registers_modbus
@@ -194,12 +215,14 @@ async def main():
                         print("\t\t   sensor_dnp_id", sensor_dnp_id)
                         print("\t\t   ", e)
                         pass
-                    if DEBUG: break
+                    if DEBUG:
+                        break
             # combinar o resultado de hardware com o resultado de sensores
             hardware_combine_sensors_dnp += combine_primary_with_secondary(
                 hardware_parsed, sensors_dnp_parsed
             )
-            if DEBUG: break
+            if DEBUG:
+                break
         all_flat_data += combine_primary_with_secondary(
             gateway_parsed, hardware_combine_sensors_modbus
         )

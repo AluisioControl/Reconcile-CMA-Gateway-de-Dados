@@ -1,6 +1,7 @@
-import os
-from .login import get_auth_token
 import asyncio
+import os
+
+from .login import get_auth_token
 
 
 class Configs:

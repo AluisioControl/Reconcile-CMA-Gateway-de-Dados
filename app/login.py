@@ -1,7 +1,8 @@
-import aiohttp
 import asyncio
 import json
 import os
+
+import aiohttp
 
 
 async def get_auth_token(host: str, username: str, password: str):
