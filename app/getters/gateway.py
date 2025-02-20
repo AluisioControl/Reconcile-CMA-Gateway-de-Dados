@@ -56,6 +56,7 @@ def parse_gateway_data(data_gateway):
     }
     return parsed_data
 
+
 async def fetch_gateway_by_id(host, auth_token, gateway_id):
     """
     Obtém detalhes de um gateway específico pelo seu ID.
@@ -76,16 +77,8 @@ async def fetch_gateway_by_id(host, auth_token, gateway_id):
     """
     url = f"{host}/cma-gateways/{gateway_id}"
     headers = {"Authorization": f"Bearer {auth_token}"}
+    return await fetch_with_retry(url=url, headers=headers)
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers) as response:
-            if response.status == 200:
-                gateway_info = await response.json()
-                return gateway_info
-            else:
-                raise Exception(
-                    f"Failed to fetch gateway by ID, status code: {response.status}"
-                )
 
 if __name__ == "__main__":
     import asyncio
@@ -97,17 +90,3 @@ if __name__ == "__main__":
         print("All gateways:")
         print(gateways)
     asyncio.run(main())
-
-# def process_gateway():
-#     """
-#     Processa os gateways obtidos e os converte para o novo formato.
-
-#     Returns:
-#         list: Lista de dicionários contendo informações dos gateways convertidos.
-#     """
-#     parsed_gateways = []
-#     gateways = fetch_all_gateways()
-#     for gateway in gateways:
-#         data = fetch_gateway_by_id(gateway["id"])
-#         parsed_gateways.append(parse_gateway(data))
-#     return parsed_gateways

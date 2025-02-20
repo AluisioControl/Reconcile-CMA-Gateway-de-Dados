@@ -1,6 +1,6 @@
 import asyncio
-
 import aiohttp
+from app.utils.http_utils import fetch_with_retry
 
 
 async def fetch_hardwares_by_gateway(
@@ -48,14 +48,7 @@ async def fetch_hardwares_by_gateway(
 
     url = f"{host}/hardwares/all"
     headers = {"Authorization": f"Bearer {auth_token}"}
-
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers, params=params) as response:
-            if response.status == 200:
-                return await response.json()
-            raise Exception(
-                f"Falha ao buscar hardwares. Código de status: {response.status}"
-            )
+    return await fetch_with_retry(url=url, headers=headers, params=params)
 
 
 def parse_hardware_data(data_hardware):
@@ -108,16 +101,8 @@ async def fetch_hardware_by_id(host, auth_token, hardware_id):
     """
     url = f"{host}/hardwares/{hardware_id}"
     headers = {"Authorization": f"Bearer {auth_token}"}
+    return await fetch_with_retry(url=url, headers=headers)
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers) as response:
-            if response.status == 200:
-                hardware_info = await response.json()
-                return hardware_info
-            else:
-                raise Exception(
-                    f"Failed to fetch hardware by ID, status code: {response.status}"
-                )
 
 if __name__ == "__main__":
     import asyncio

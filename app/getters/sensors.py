@@ -1,4 +1,5 @@
 import aiohttp
+from app.utils.http_utils import fetch_with_retry
 
 
 async def fetch_sensors_modbus(
@@ -63,14 +64,7 @@ async def fetch_sensors_modbus(
 
     url = f"{host}/sensors-modbus"
     headers = {"Authorization": f"Bearer {auth_token}"}
-
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers, params=params) as response:
-            if response.status == 200:
-                return await response.json()
-            raise Exception(
-                f"Falha ao buscar sensores Modbus. Código de status: {response.status}"
-            )
+    return await fetch_with_retry(url=url, headers=headers, params=params)
 
 
 async def fetch_sensors_dnp(
@@ -134,14 +128,7 @@ async def fetch_sensors_dnp(
 
     url = f"{host}/sensors-dnp"
     headers = {"Authorization": f"Bearer {auth_token}"}
-
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers, params=params) as response:
-            if response.status == 200:
-                return await response.json()
-            raise Exception(
-                f"Falha ao buscar sensores DNP. Código de status: {response.status}"
-            )
+    return await fetch_with_retry(url=url, headers=headers, params=params)
 
 
 def parse_sensor_modbus_data(data_sensores):
@@ -262,16 +249,7 @@ async def fetch_sensor_modbus_by_id(host, auth_token, sensor_modbus_id):
     """
     url = f"{host}/sensors-modbus/{sensor_modbus_id}"
     headers = {"Authorization": f"Bearer {auth_token}"}
-
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers) as response:
-            if response.status == 200:
-                sensor_modbus_info = await response.json()
-                return sensor_modbus_info
-            else:
-                raise Exception(
-                    f"Failed to fetch sensor Modbus by ID, status code: {response.status}"
-                )
+    return await fetch_with_retry(url=url, headers=headers)
 
 
 async def fetch_sensor_dnp_by_id(host, auth_token, sensor_dnp_id):
@@ -296,13 +274,5 @@ async def fetch_sensor_dnp_by_id(host, auth_token, sensor_dnp_id):
     """
     url = f"{host}/sensors-dnp/{sensor_dnp_id}"
     headers = {"Authorization": f"Bearer {auth_token}"}
+    return await fetch_with_retry(url=url, headers=headers)
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers) as response:
-            if response.status == 200:
-                sensor_dnp_info = await response.json()
-                return sensor_dnp_info
-            else:
-                raise Exception(
-                    f"Failed to fetch sensor DNP by ID={sensor_dnp_id}, status code: {response.status}"
-                )

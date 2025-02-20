@@ -39,6 +39,12 @@ async def fetch_with_retry(
                 ) as response:
                     if response.status == 200:
                         return await response.json()
+                    if response.status == 401:
+                        from app.settings import configs
+                        configs.relogin()
+                        raise Exception(
+                            "Falha na autenticação. Verifique o token de acesso."
+                        )
                     raise Exception(
                         f"Falha na requisição. Código de status: {response.status}"
                     )
