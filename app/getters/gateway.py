@@ -1,4 +1,5 @@
 import aiohttp
+from app.utils.http_utils import fetch_with_retry
 
 
 async def fetch_all_gateways(host, auth_token):
@@ -23,16 +24,7 @@ async def fetch_all_gateways(host, auth_token):
     """
     url = f"{host}/cma-gateways/all"
     headers = {"Authorization": f"Bearer {auth_token}"}
-
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers) as response:
-            if response.status == 200:
-                gateways = await response.json()
-                return gateways
-            else:
-                raise Exception(
-                    f"Failed to fetch gateways, status code: {response.status}"
-                )
+    return await fetch_with_retry(url=url, headers=headers)
 
 
 def parse_gateway_data(data_gateway):
@@ -63,7 +55,6 @@ def parse_gateway_data(data_gateway):
         "substationId_gtw": data_gateway.get("substationId", None),
     }
     return parsed_data
-
 
 async def fetch_gateway_by_id(host, auth_token, gateway_id):
     """
@@ -96,17 +87,27 @@ async def fetch_gateway_by_id(host, auth_token, gateway_id):
                     f"Failed to fetch gateway by ID, status code: {response.status}"
                 )
 
+if __name__ == "__main__":
+    import asyncio
+    import os
+    from app.settings import configs
 
-def process_gateway():
-    """
-    Processa os gateways obtidos e os converte para o novo formato.
+    async def main():
+        gateways = await fetch_all_gateways(configs.host, configs.auth_token)
+        print("All gateways:")
+        print(gateways)
+    asyncio.run(main())
 
-    Returns:
-        list: Lista de dicionários contendo informações dos gateways convertidos.
-    """
-    parsed_gateways = []
-    gateways = fetch_all_gateways()
-    for gateway in gateways:
-        data = fetch_gateway_by_id(gateway["id"])
-        parsed_gateways.append(parse_gateway(data))
-    return parsed_gateways
+# def process_gateway():
+#     """
+#     Processa os gateways obtidos e os converte para o novo formato.
+
+#     Returns:
+#         list: Lista de dicionários contendo informações dos gateways convertidos.
+#     """
+#     parsed_gateways = []
+#     gateways = fetch_all_gateways()
+#     for gateway in gateways:
+#         data = fetch_gateway_by_id(gateway["id"])
+#         parsed_gateways.append(parse_gateway(data))
+#     return parsed_gateways

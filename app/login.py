@@ -1,7 +1,6 @@
 import asyncio
 import json
 import os
-
 import aiohttp
 
 
@@ -21,6 +20,14 @@ async def get_auth_token(host: str, username: str, password: str):
                 # Gerencia o erro de autenticação
                 raise Exception(f"Failed to get token, status code: {response.status}")
         response
+
+
+def relogin():
+    from .settings import configs
+    host = os.environ.get("GWTDADOS_HOST")
+    username = os.environ.get("GWTDADOS_USERNAME")
+    password = os.environ.get("GWTDADOS_PASSWORD")
+    configs.auth_token = asyncio.run(get_auth_token(host, username, password))
 
 
 if __name__ == "__main__":

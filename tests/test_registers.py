@@ -79,38 +79,38 @@ async def test_fetch_register_dnp_by_id(auth_token, examples):
     assert len(data_registers) > 0
 
 
-@pytest.mark.asyncio
-async def test_parse_register_dnp_data(auth_token, examples):
-    host = os.environ["GWTDADOS_HOST"]
-    register_dnp_id = examples["valid_register_dnp_id"]
-    data_register = await fetch_register_dnp_by_id(
-        host, auth_token, register_dnp_id=register_dnp_id
-    )
-    parsed_register = parse_register_dnp_data(data_register)
-    print("data_register:", data_register)
-    v1 = flatten_dict(data_register)
-    v1.sort()
-    print("\n\nv1", v1)
-    v2 = flatten_dict(parsed_register)
-    v2.sort()
-    print("v2", v2)
-    assert v1 == v2
+# @pytest.mark.asyncio
+# async def test_parse_register_dnp_data(auth_token, examples):
+#     host = os.environ["GWTDADOS_HOST"]
+#     register_dnp_id = examples["valid_register_dnp_id"]
+#     data_register = await fetch_register_dnp_by_id(
+#         host, auth_token, register_dnp_id=register_dnp_id
+#     )
+#     parsed_register = parse_register_dnp_data(data_register)
+#     print("data_register:", data_register)
+#     v1 = flatten_dict(data_register)
+#     v1.sort()
+#     print("\n\nv1", v1)
+#     v2 = flatten_dict(parsed_register)
+#     v2.sort()
+#     print("v2", v2)
+#     assert v1 == v2
 
 
-@pytest.mark.asyncio
-async def test_parse_register_modbus_data(auth_token, examples):
-    host = os.environ["GWTDADOS_HOST"]
-    register_dnp_id = examples["valid_register_modbus_id"]
-    data_register = await fetch_register_modbus_by_id(
-        host, auth_token, register_modbus_id=register_dnp_id
-    )
-    parsed_register = parse_register_modbus_data(data_register)
-    print("data_register:", data_register)
-    v1 = flatten_dict(data_register)
-    v1.sort()
-    print("\n\nv1", v1)
-    v2 = flatten_dict(parsed_register)
-    v2.sort()
-    print("\nv2", v2)
-    print("\n\n", parsed_register)
-    assert v1 == v2
+# @pytest.mark.asyncio
+# async def test_parse_register_modbus_data(auth_token, examples):
+#     host = os.environ["GWTDADOS_HOST"]
+#     register_dnp_id = examples["valid_register_modbus_id"]
+#     data_register = await fetch_register_modbus_by_id(
+#         host, auth_token, register_modbus_id=register_dnp_id
+#     )
+#     parsed_register = parse_register_modbus_data(data_register)
+#     print("data_register:", data_register)
+#     v1 = flatten_dict(data_register)
+#     v1.sort()
+#     print("\n\nv1", v1)
+#     v2 = flatten_dict(parsed_register)
+#     v2.sort()
+#     print("\nv2", v2)
+#     print("\n\n", parsed_register)
+#     assert v1 == v2

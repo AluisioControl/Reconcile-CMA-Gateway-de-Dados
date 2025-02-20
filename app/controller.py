@@ -36,8 +36,8 @@ from app.getters.sensors import (
 from .settings import configs
 
 DEBUG = False
-MAX_PAGE_SIZE = 2
-semaphore = Semaphore(36)
+MAX_PAGE_SIZE = 9999
+semaphore = Semaphore(30)
 
 
 def multiplex_dicts(primary_list: list[dict], secondary_list: list[dict]) -> list[dict]:
@@ -125,6 +125,7 @@ async def collect_registers_dnp(sensor_dnp_id):
 async def main():
     all_flat_data = []
     hardwares_parsed = []
+    hardwares_combined = []
     sensors_parsed = []
     gateways = await fetch_all_gateways(
         host=configs.host, auth_token=configs.auth_token
@@ -150,7 +151,7 @@ async def main():
                 hardware_id=hardware_id,
             )
             hardware_parsed = parse_hardware_data(hardware_data)
-            hardwares_parsed.append(hardware_parsed)
+            # hardwares_parsed.append(hardware_parsed)
 
             # consultar todos os sensor MODBUS associado a cada hardware
             sensors_parsed = []
@@ -163,6 +164,7 @@ async def main():
                 # sensors_parsed.append(parse_sensor_modbus_data({})) # adicionar um sensor vazio
                 print("\t\t sensor_modbus_id", "null")
             else:
+                sensor_combine_registers_modbus = []
                 for sensor in sensors[
                     "content"
                 ]:  # informação de sensores modbus paginada
@@ -177,15 +179,18 @@ async def main():
                     sensors_parsed.append(sensor_parsed)
                     # coletar os registros de cada sensor
                     registers_modbus = await collect_registers_modbus(sensor_id)
-                    sensor_combine_registers_modbus = combine_primary_with_secondary(
+                    sensor_combine_registers_modbus += combine_primary_with_secondary(
                         sensor_parsed, registers_modbus
                     )
+                    print("\t\t +sub total resistros por sensor:", len(sensor_combine_registers_modbus))
                     if DEBUG:
                         break
             # combinar o resultado de hardware com o resultado de sensores
             hardware_combine_sensors_modbus += combine_primary_with_secondary(
                 hardware_parsed, sensor_combine_registers_modbus
             )
+            print("\t\t +subtotal de restristros por hardware:", len(hardware_combine_sensors_modbus))
+            # hardwares_combined += hardware_combine_sensors_modbus
 
             # consultar todos os sensor DNP associado a cada hardware
             sensors_dnp_parsed = []
@@ -220,18 +225,24 @@ async def main():
                         pass
                     if DEBUG:
                         break
+                    print("total de resgistro por sensor:", len(sensors_dnp_parsed))
             # combinar o resultado de hardware com o resultado de sensores
             hardware_combine_sensors_dnp += combine_primary_with_secondary(
                 hardware_parsed, sensors_dnp_parsed
             )
+            print("\t\t +subtotal de restristros dnp por hardware:", len(hardware_combine_sensors_dnp))
             if DEBUG:
                 break
+        print("total de sensores modbus:", len(hardware_combine_sensors_modbus))
+        print("total de sensores dnp3:", len(hardware_combine_sensors_modbus))
         all_flat_data += combine_primary_with_secondary(
             gateway_parsed, hardware_combine_sensors_modbus
         )
         all_flat_data += combine_primary_with_secondary(
             gateway_parsed, hardware_combine_sensors_dnp
         )
+        print("total acumulado por hardware:", len(all_flat_data))
+    print("total de registros:", len(all_flat_data))
     # Salvar os dados em um arquivo JSON
     with open("data.json", "w") as f:
         json.dump(all_flat_data, f)

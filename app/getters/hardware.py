@@ -118,3 +118,17 @@ async def fetch_hardware_by_id(host, auth_token, hardware_id):
                 raise Exception(
                     f"Failed to fetch hardware by ID, status code: {response.status}"
                 )
+
+if __name__ == "__main__":
+    import asyncio
+    import os
+    from app.settings import configs
+    from tests.conftest import gateways
+
+    async def main():
+        cma_gateway_id = gateways[1]["id"]
+        hardwares = await fetch_hardwares_by_gateway(configs.host, configs.auth_token, cma_gateway_id=cma_gateway_id)
+        print("All hardwares:")
+        print(hardwares)
+
+    asyncio.run(main())

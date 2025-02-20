@@ -116,14 +116,20 @@ async def fetch_registers_modbus(
     url = f"{host}/registers-modbus"
     headers = {"Authorization": f"Bearer {auth_token}"}
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers, params=params) as response:
-            if response.status == 200:
-                return await response.json()
-            raise Exception(
-                f"Falha ao buscar registros Modbus. Código de status: {response.status}"
-            )
-
+    # Tenta até 3 vezes se der timeout
+    for attempt in range(1, 4):
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, headers=headers, params=params) as response:
+                    if response.status == 200:
+                        return await response.json()
+                    raise Exception(
+                        f"Falha ao buscar registros Modbus. Código de status: {response.status}"
+                    )
+        except aiohttp.client_exceptions.ConnectionTimeoutError:
+            print(f"Tentativa {attempt}: deu timeout, bora tentar de novo...")
+            if attempt == 3:
+                raise Exception("Timeout persistente após 3 tentativas")
 
 async def fetch_registers_dnp(
     host: str,

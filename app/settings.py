@@ -1,7 +1,7 @@
 import asyncio
 import os
 
-from .login import get_auth_token
+from .login import get_auth_token, relogin
 
 
 class Configs:
@@ -21,9 +21,11 @@ class Configs:
 
     async def login(self):
         self.auth_token = await get_auth_token(self.host, self.username, self.password)
+    
 
 
 configs = Configs()
 configs.auth_token = asyncio.run(
     get_auth_token(configs.host, configs.username, configs.password)
 )
+configs.relogin = relogin
