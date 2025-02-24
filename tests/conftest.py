@@ -5,20 +5,7 @@ import pytest_asyncio
 
 from app.login import get_auth_token
 
-gateways = [
-    {
-        "id": "DA5F3154-FBEE-EF11-88FB-6045BDFE79DC",
-        "name": "Gateway 01",
-        "ip": "100.201.0.5",
-        "active": True,
-        "substation": {
-            "id": "833440DD-F2EE-EF11-88FB-6045BDFE79DC",
-            "name": "Taubaté",
-            "active": True,
-            "sapAbbreviation": "TAU",
-        },
-    }
-]
+gateways = [{'id': 'DA5F3154-FBEE-EF11-88FB-6045BDFE79DC', 'name': 'Gateway 01', 'ip': '100.201.0.5', 'active': True, 'substation': {'id': '833440DD-F2EE-EF11-88FB-6045BDFE79DC', 'name': 'Taubaté', 'active': True, 'sapAbbreviation': 'TAU'}}, {'id': '748E9B67-80EF-EF11-88FB-6045BDFE79DC', 'name': 'Gateway 2', 'ip': '100.200.0.10', 'active': True, 'substation': {'id': '853440DD-F2EE-EF11-88FB-6045BDFE79DC', 'name': 'Manguaguá', 'active': True, 'sapAbbreviation': 'MGG'}}, {'id': 'FDF15BCA-B9EF-EF11-88FB-6045BDFE79DC', 'name': 'Gateway 3', 'ip': '192.152.45.26', 'active': True, 'substation': {'id': '843440DD-F2EE-EF11-88FB-6045BDFE79DC', 'name': 'São Carlos', 'active': True, 'sapAbbreviation': 'SCL'}}]
 
 HardwaresList = [
     {
@@ -27,7 +14,7 @@ HardwaresList = [
         "sapId": "abcde",
         "active": True,
         "cmaGateway": {
-            "id": "56B742EF-AED1-EF11-88F9-6045BDFE79DC",
+            "id": "DA5F3154-FBEE-EF11-88FB-6045BDFE79DC",
             "name": "Gateway 01",
             "ip": "100.201.0.5",
             "active": True,
@@ -39,7 +26,7 @@ HardwaresList = [
         "sapId": "fghij",
         "active": True,
         "cmaGateway": {
-            "id": "56B742EF-AED1-EF11-88F9-6045BDFE79DC",
+            "id": "DA5F3154-FBEE-EF11-88FB-6045BDFE79DC",
             "name": "Gateway 01",
             "ip": "100.201.0.5",
             "active": True,
@@ -51,7 +38,7 @@ HardwaresList = [
         "sapId": "klmno",
         "active": True,
         "cmaGateway": {
-            "id": "56B742EF-AED1-EF11-88F9-6045BDFE79DC",
+            "id": "DA5F3154-FBEE-EF11-88FB-6045BDFE79DC",
             "name": "Gateway 01",
             "ip": "100.201.0.5",
             "active": True,
@@ -63,7 +50,7 @@ HardwaresList = [
         "sapId": "pqrst",
         "active": True,
         "cmaGateway": {
-            "id": "56B742EF-AED1-EF11-88F9-6045BDFE79DC",
+            "id": "DA5F3154-FBEE-EF11-88FB-6045BDFE79DC",
             "name": "Gateway 01",
             "ip": "100.201.0.5",
             "active": True,
@@ -75,7 +62,7 @@ HardwaresList = [
         "sapId": "uvwxy",
         "active": True,
         "cmaGateway": {
-            "id": "56B742EF-AED1-EF11-88F9-6045BDFE79DC",
+            "id": "DA5F3154-FBEE-EF11-88FB-6045BDFE79DC",
             "name": "Gateway 01",
             "ip": "100.201.0.5",
             "active": True,
@@ -87,7 +74,7 @@ HardwaresList = [
         "sapId": "zabcd",
         "active": False,
         "cmaGateway": {
-            "id": "56B742EF-AED1-EF11-88F9-6045BDFE79DC",
+            "id": "DA5F3154-FBEE-EF11-88FB-6045BDFE79DC",
             "name": "Gateway 01",
             "ip": "100.201.0.5",
             "active": True,
@@ -559,7 +546,7 @@ async def examples():
         "host": os.getenv("GWTDADOS_HOST"),
         "username": os.getenv("GWTDADOS_USERNAME"),
         "password": os.getenv("GWTDADOS_PASSWORD"),
-        "valid_gateway_id": "56B742EF-AED1-EF11-88F9-6045BDFE79DC",
+        "valid_gateway_id": "DA5F3154-FBEE-EF11-88FB-6045BDFE79DC",
         "valid_hardware_id": "6FE59604-1214-48D3-A6FE-6190A38653CE",
         "valid_hardware_id_dnp": "78CACAF7-0CEC-EF11-88FB-6045BDFE79DC",
         "valid_sensor_modbus_id": "17BC1946-AF94-42AC-BC05-B6141C001272",

@@ -17,11 +17,11 @@ class Configs:
             self.host = os.environ.get("GWTDADOS_HOST")
             self.username = os.environ.get("GWTDADOS_USERNAME")
             self.password = os.environ.get("GWTDADOS_PASSWORD")
+            self.sqlite_db_path = os.environ.get("SQLITE_MIDDLEWARE_PATH")
             self.initialized = True
 
     async def login(self):
         self.auth_token = await get_auth_token(self.host, self.username, self.password)
-    
 
 
 configs = Configs()

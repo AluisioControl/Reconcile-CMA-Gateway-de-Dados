@@ -1,4 +1,5 @@
 import aiohttp
+
 from app.utils.http_utils import fetch_with_retry
 
 
@@ -83,10 +84,12 @@ async def fetch_gateway_by_id(host, auth_token, gateway_id):
 if __name__ == "__main__":
     import asyncio
     import os
+
     from app.settings import configs
 
     async def main():
         gateways = await fetch_all_gateways(configs.host, configs.auth_token)
         print("All gateways:")
         print(gateways)
+
     asyncio.run(main())

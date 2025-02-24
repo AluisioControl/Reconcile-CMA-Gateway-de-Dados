@@ -1,14 +1,15 @@
-import aiohttp
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
+import aiohttp
+import asyncio
 
 async def fetch_with_retry(
     url: str,
     headers: Dict[str, str],
     method: str = "GET",
     max_attempts: int = 3,
-    timeout: Optional[float] = None,
-    **kwargs
+    timeout: Optional[float] = 15,
+    **kwargs,
 ) -> Any:
     """
     Faz uma requisição HTTP com retentativas em caso de timeout.
@@ -35,12 +36,13 @@ async def fetch_with_retry(
                     url=url,
                     headers=headers,
                     timeout=aiohttp.ClientTimeout(total=timeout),
-                    **kwargs
+                    **kwargs,
                 ) as response:
                     if response.status == 200:
                         return await response.json()
                     if response.status == 401:
                         from app.settings import configs
+
                         configs.relogin()
                         raise Exception(
                             "Falha na autenticação. Verifique o token de acesso."
@@ -52,8 +54,7 @@ async def fetch_with_retry(
             print(f"Tentativa {attempt}: erro de conexão ({e}), tentando novamente...")
             if attempt == max_attempts:
                 raise Exception(f"Falha após {max_attempts} tentativas: {str(e)}")
-        except aiohttp.ClientTimeoutError:
+        except asyncio.exceptions.TimeoutError:
             print(f"Tentativa {attempt}: timeout, tentando novamente...")
             if attempt == max_attempts:
                 raise Exception(f"Timeout persistente após {max_attempts} tentativas")
-            

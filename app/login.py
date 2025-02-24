@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+
 import aiohttp
 
 
@@ -24,6 +25,7 @@ async def get_auth_token(host: str, username: str, password: str):
 
 def relogin():
     from .settings import configs
+
     host = os.environ.get("GWTDADOS_HOST")
     username = os.environ.get("GWTDADOS_USERNAME")
     password = os.environ.get("GWTDADOS_PASSWORD")

@@ -1,4 +1,7 @@
+import json
+
 import aiohttp
+
 from app.utils.http_utils import fetch_with_retry
 
 
@@ -303,6 +306,7 @@ def parse_register_modbus_data(data_register_modbus):
         "active_sen_reg_mod": data_register_modbus.get("sensorType", {}).get(
             "active", None
         ),
+        "reg_mod_tags": json.dumps(data_register_modbus.get("tags", {})),
     }
     return parsed_data
 
@@ -378,5 +382,6 @@ def parse_register_dnp_data(data_reg_dnp3):
         "id_sen_reg_dnp3": data_reg_dnp3.get("sensorType", {}).get("id", None),
         "name_sen_reg_dnp3": data_reg_dnp3.get("sensorType", {}).get("name", None),
         "active_sen_reg_dnp3": data_reg_dnp3.get("sensorType", {}).get("active", None),
+        "reg_dnp3_tags": json.dumps(data_reg_dnp3.get("tags", {})),
     }
     return parsed_data

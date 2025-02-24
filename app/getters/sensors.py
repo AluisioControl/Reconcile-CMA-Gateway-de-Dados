@@ -1,4 +1,5 @@
 import aiohttp
+
 from app.utils.http_utils import fetch_with_retry
 
 
@@ -275,4 +276,3 @@ async def fetch_sensor_dnp_by_id(host, auth_token, sensor_dnp_id):
     url = f"{host}/sensors-dnp/{sensor_dnp_id}"
     headers = {"Authorization": f"Bearer {auth_token}"}
     return await fetch_with_retry(url=url, headers=headers)
-

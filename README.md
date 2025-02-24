@@ -175,3 +175,6 @@ sensor_modbus_id 9BB1D77E-782D-4733-B926-BDEE0521CE8C
 sensor_modbus_id A7A3DD46-FF15-4AF9-B27E-5BC6A096CC55
 sensor_modbus_id 9B10AFBD-D42F-46A5-91F6-CAF2910BB818
 
+
+
+# TODO - Criar um banco sqlite para armazenar os dados coletados e traduzidos para o Banco Middlware
