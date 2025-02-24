@@ -35,7 +35,7 @@ PYTHONPATH=$(pwd) uv run python tests/test.py
 
 ## coletar as informações da API do CMA_WEB
 ```bash
-PYTHONPATH=$(pwd) uv run pythnon -m app.controller
+PYTHONPATH=$(pwd) uv run pythno -m app.controller
 ```
 
 ## conciliar as informações coletadas com a base de dados do middleware

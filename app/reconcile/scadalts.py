@@ -70,6 +70,9 @@ print("converted to: Import ScadaLTS")
 # print("\nin_fields:", in_fields)
 df = df.rename(columns=mapping)
 
+# remover coluna duplicada por conta da tradução
+df = df.loc[:, ~df.columns.duplicated()]
+
 out_fields = [
     "xid_equip", "updatePeriodType", "enabled", "host", 
     "maxReadBitCount", "maxReadRegisterCount", 
@@ -85,18 +88,24 @@ print(df)
 print("len(df):", len(df))
 
 print("login ScadaLTS")
-try:
-    auth_ScadaLTS()
-except Exception as e:
-    print("Error:", e)
+auth_ScadaLTS()
 
 # import datapoints
 for index, row in df.iterrows():
-    datasource = import_datasource_modbus(row['xid_equip'], row['updatePeriodType'], row['enabled'], row['host'],
-                             row['maxReadBitCount'], row['maxReadRegisterCount'],
-                             row['maxWriteRegisterCount'], row['port'], row['retries'], row['timeout'], row['updatePeriods'])
+    datasource = import_datasource_modbus(
+        xid_equip=row['xid_equip'],
+        updatePeriodType=row['updatePeriodType'],
+        enabled=row['enabled'],
+        host=row['host'],
+        maxReadBitCount=row['maxReadBitCount'],
+        maxReadRegisterCount=row['maxReadRegisterCount'],
+        maxWriteRegisterCount=row['maxWriteRegisterCount'],
+        port=row['port'],
+        retries=row['retries'],
+        timeout=row['timeout'],
+        updatePeriods=row['updatePeriods']
+    )
     send_data_to_scada(datasource)
-
 
 ##########################
 # PROCESSAR OS REGISTROS #
@@ -130,13 +139,18 @@ print("converted to: Import ScadaLTS")
 # print("\nin_fields:", in_fields)
 df = df.rename(columns=mapping)
 
+# remover coluna duplicada por conta da tradução
+df = df.loc[:, ~df.columns.duplicated()]
+
 out_fields = [
     "xid_equip", "updatePeriodType", "enabled", "host", 
     "maxReadBitCount", "maxReadRegisterCount", 
     "maxWriteRegisterCount", "port", "retries", "timeout", "updatePeriods"
 ]
 df = df[out_fields]
-print(df)
+
+for index, row in df.iterrows():
+    print(row.to_dict())
 # print(df[out_fields])
 
 # remover os xid_equip com valores nulos ou vazios
@@ -145,9 +159,19 @@ print(df)
 print("len(df):", len(df))
 
 for index, row in df.iterrows():
-    datasource = import_datapoint_modbus(row['xid_equip'], row['updatePeriodType'], row['enabled'], row['host'],
-                             row['maxReadBitCount'], row['maxReadRegisterCount'],
-                             row['maxWriteRegisterCount'], row['port'], row['retries'], row['timeout'], row['updatePeriods'])
+    datasource = import_datapoint_modbus(
+        xid_sensor=row['xid_sensor'],
+        range=row['range'],
+        modbusDataType=row['modbusDataType'],
+        additive=row['additive'], 
+        bit=row['bit'],
+        multiplier=row['multiplier'],
+        offset=row['offset'],
+        slaveId=row['slaveId'],
+        xid_equip=row['xid_equip'],
+        enabled=row['enabled'],
+        nome=row['nome'],
+    )
     send_data_to_scada(datasource)
 
 
