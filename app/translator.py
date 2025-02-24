@@ -191,7 +191,7 @@ registradores_modbus_translate = [
     ["Sensor Modbus ID", "sensorModbusId", "sensorModbusId_reg_mod", "", "", "", ""],
     ["Register Type ID", "registerTypeId", "registerTypeId_reg_mod", "", "", "", ""],
     ["Sensor Type ID", "sensorTypeId", "sensorTypeId_reg_mod", "", "", "", ""],
-    ["Name", "name", "name_reg_mod", "nome", "nome", "", "Nome"],
+    ["Name", "name", "name_reg_mod", "nome", "nome", "nome", "Nome"],
     ["Description", "description", "description_reg_mod", "", "", "", ""],
     [
         "Address Slave",

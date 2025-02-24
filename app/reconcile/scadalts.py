@@ -40,7 +40,7 @@ Nota:
 
 """
 
-
+print("Processando dados de Sensores...")
 # Load hardware data from JSON files
 with open("./data.json") as f:
     # Parse each hardware data
@@ -49,11 +49,9 @@ with open("./data.json") as f:
 data_fields = list(data[0].keys())
 
 df = pd.DataFrame(data)
-print("len(df):", len(df))
 
 # filtar unicos pela coluna id_sen
 df = df.drop_duplicates(subset=["id_sen"])
-print("len(df):", len(df))
 
 mapping = map_fields(
     base_translate=all_translates,
@@ -62,36 +60,25 @@ mapping = map_fields(
 )
 # reduzir o mapping para os campos que existem data_fields
 mapping = {k: v for k, v in mapping.items() if k in data_fields}
-
-print("\nMapping:", mapping)
-
-print("converted to: Import ScadaLTS")
-# in_fields = list(mapping.keys())
-# print("\nin_fields:", in_fields)
 df = df.rename(columns=mapping)
-
 # remover coluna duplicada por conta da tradução
 df = df.loc[:, ~df.columns.duplicated()]
-
 out_fields = [
     "xid_equip", "updatePeriodType", "enabled", "host", 
     "maxReadBitCount", "maxReadRegisterCount", 
     "maxWriteRegisterCount", "port", "retries", "timeout", "updatePeriods"
 ]
-df = df[out_fields]
-print(df)
-# print(df[out_fields])
+df = df[out_fields] # Selecionar apenas os campos de saída
 
 # remover os xid_equip com valores nulos ou vazios
 df = df[df['xid_equip'].notna() & df['xid_equip'].str.strip().astype(bool)]
-print(df)
-print("len(df):", len(df))
 
 print("login ScadaLTS")
 auth_ScadaLTS()
 
 # import datapoints
 for index, row in df.iterrows():
+    print("\nsend datasource to ScalaLTS:", row.to_dict(), "\n")
     datasource = import_datasource_modbus(
         xid_equip=row['xid_equip'],
         updatePeriodType=row['updatePeriodType'],
@@ -119,7 +106,6 @@ with open("./data.json") as f:
 data_fields = list(data[0].keys())
 
 df = pd.DataFrame(data)
-print("len(df):", len(df))
 
 # remover os id_reg_mod com valores nulos ou vazios -isolar os dos modbus
 df = df[df['id_reg_mod'].notna() & df['id_reg_mod'].str.strip().astype(bool)]
@@ -132,33 +118,23 @@ mapping = map_fields(
 # reduzir o mapping para os campos que existem data_fields
 mapping = {k: v for k, v in mapping.items() if k in data_fields}
 
-print("\nMapping:", mapping)
-
-print("converted to: Import ScadaLTS")
-# in_fields = list(mapping.keys())
-# print("\nin_fields:", in_fields)
 df = df.rename(columns=mapping)
 
 # remover coluna duplicada por conta da tradução
 df = df.loc[:, ~df.columns.duplicated()]
 
 out_fields = [
-    "xid_equip", "updatePeriodType", "enabled", "host", 
-    "maxReadBitCount", "maxReadRegisterCount", 
-    "maxWriteRegisterCount", "port", "retries", "timeout", "updatePeriods"
+    "xid_sensor", "range", "modbusDataType", "additive", 
+    "bit", "multiplier", "offset", "slaveId",
+    "xid_equip", "enabled", "nome"
 ]
 df = df[out_fields]
 
-for index, row in df.iterrows():
-    print(row.to_dict())
-# print(df[out_fields])
-
 # remover os xid_equip com valores nulos ou vazios
 df = df[df['xid_equip'].notna() & df['xid_equip'].str.strip().astype(bool)]
-print(df)
-print("len(df):", len(df))
 
 for index, row in df.iterrows():
+    print("\nSend datapoint to ScadaLTS:", row.to_json(), "\n")	
     datasource = import_datapoint_modbus(
         xid_sensor=row['xid_sensor'],
         range=row['range'],
@@ -173,9 +149,3 @@ for index, row in df.iterrows():
         nome=row['nome'],
     )
     send_data_to_scada(datasource)
-
-
-
-
-
-

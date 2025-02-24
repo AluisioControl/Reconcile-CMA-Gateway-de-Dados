@@ -7,6 +7,9 @@ from dotenv import load_dotenv
 import os
 import logging
 
+if not load_dotenv():
+    raise Exception("Could not load .env file")
+
 # Localização do arquivo de log 
 LOG_LINUX   = './logs/scadalts_imports.log'
 #LOG_WINDOWS = os.getenv("LOG_WINDOWS")

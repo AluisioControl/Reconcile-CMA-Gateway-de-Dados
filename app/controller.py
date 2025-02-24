@@ -36,10 +36,7 @@ from app.utils.data import combine_primary_with_secondary
 
 from .settings import configs
 
-DEBUG = False
-MAX_PAGE_SIZE = 999
-semaphore = Semaphore(90)
-
+semaphore = Semaphore(configs.MAX_PARALLEL_REQUESTS)
 
 async def fetch_and_parse_register_modbus(register_data):
     async with semaphore:
@@ -57,7 +54,7 @@ async def collect_registers_modbus(sensor_modbus_id):
         host=configs.host,
         auth_token=configs.auth_token,
         sensor_modbus_id=sensor_modbus_id,
-        size=MAX_PAGE_SIZE,
+        size=configs.MAX_PAGE_SIZE,
     )
     # processar os registros em paralelo
     tasks = [
@@ -85,7 +82,7 @@ async def collect_registers_dnp(sensor_dnp_id):
         host=configs.host,
         auth_token=configs.auth_token,
         sensor_dnp_id=sensor_dnp_id,
-        size=MAX_PAGE_SIZE,
+        size=configs.MAX_PAGE_SIZE,
     )
     # processar os registros em paralelo
     tasks = [
@@ -113,9 +110,13 @@ async def main():
     gateways = await fetch_all_gateways(
         host=configs.host, auth_token=configs.auth_token
     )
+    # get gateway by name
+    gateways = [gateway for gateway in gateways if gateway["name"] == configs.gateway_name]
+    if not gateways:
+        raise ValueError(f"Gateway {configs.gateway_name} não encontrado")
     for gateway in gateways:
         gateway_id = gateway["id"]
-        print("gateway_id:", gateway_id)
+        print("gateway name:", gateway["name"])
         gateway_data = await fetch_gateway_by_id(
             host=configs.host, auth_token=configs.auth_token, gateway_id=gateway_id
         )
@@ -128,7 +129,7 @@ async def main():
         )
         for hardware in hardwares:
             hardware_id = hardware["id"]
-            print("\t hardware_id", hardware_id)
+            print("\t nome hardware", hardware["name"])
             hardware_data = await fetch_hardware_by_id(
                 host=configs.host,
                 auth_token=configs.auth_token,
@@ -153,7 +154,7 @@ async def main():
                     "content"
                 ]:  # informação de sensores modbus paginada
                     sensor_id = sensor["id"]
-                    print("\t\t sensor_modbus_id", sensor_id)
+                    print("\t\t Nome sensor modbus:", sensor["name"])
                     sensor_data = await fetch_sensor_modbus_by_id(
                         host=configs.host,
                         auth_token=configs.auth_token,
@@ -172,7 +173,7 @@ async def main():
                         "\t\t +sub total resistros por sensor:",
                         len(sensor_combine_registers_modbus),
                     )
-                    if DEBUG:
+                    if configs.DEBUG:
                         break
             # combinar o resultado de hardware com o resultado de sensores
             hardware_combine_sensors_modbus += combine_primary_with_secondary(
@@ -221,7 +222,7 @@ async def main():
                         "\t\t +sub total resistros por sensor:",
                         len(sensor_combine_registers_dnp),
                     )
-                    if DEBUG:
+                    if configs.DEBUG:
                         break
                     print("total de resgistro por sensor:", len(sensors_dnp_parsed))
             # combinar o resultado de hardware com o resultado de sensores
@@ -232,7 +233,7 @@ async def main():
                 "\t\t +subtotal de restristros dnp por hardware:",
                 len(hardware_combine_sensors_dnp),
             )
-            if DEBUG:
+            if configs.DEBUG:
                 break
         print("total de sensores modbus:", len(hardware_combine_sensors_modbus))
         print("total de sensores dnp3:", len(hardware_combine_sensors_dnp))

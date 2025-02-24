@@ -20,7 +20,7 @@ cp .env_sample .env
 
 ## load envs:
 ```bash	
-export $(cat .env |grep -v ^# | xargs)
+source ./loadenv.sh
 ```
 
 ## get auth token:
