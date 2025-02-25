@@ -64,7 +64,7 @@ print(df)
 # print(df[out_fields])
 
 # remover os xid_equip com valores nulos ou vazios
-df = df[df['xid_equip'].notna() & df['xid_equip'].str.strip().astype(bool)]
+df = df[df["xid_equip"].notna() & df["xid_equip"].str.strip().astype(bool)]
 
 # Conectar ao banco SQLite
 print("\n\tconfigs.sqlite_db_path", configs.sqlite_db_path)

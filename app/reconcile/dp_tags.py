@@ -1,6 +1,8 @@
 import json
 import sqlite3
+
 import pandas as pd
+
 from app.settings import configs
 from app.translator import all_translates, map_fields, translate
 from app.utils.data import combine_primary_with_secondary
@@ -13,24 +15,21 @@ data_fields = list(data[0].keys())
 
 df = pd.DataFrame(data)
 
-df = df[['id_reg_mod','reg_mod_tags']]
+df = df[["id_reg_mod", "reg_mod_tags"]]
 
 # remover os id_reg_mod com valores nulos ou vazios
-df = df[df['id_reg_mod'].notna() & df['id_reg_mod'].str.strip().astype(bool)]
+df = df[df["id_reg_mod"].notna() & df["id_reg_mod"].str.strip().astype(bool)]
 
 # precisamos pegar o valor de reg_mod_tags que é um json e transformar em um DataFrame
 combined_tags = []
-df['reg_mod_tags'] = df['reg_mod_tags'].apply(lambda x: json.loads(x))
+df["reg_mod_tags"] = df["reg_mod_tags"].apply(lambda x: json.loads(x))
 for index, row in df.iterrows():
-    combined_tags += combine_primary_with_secondary({'id_reg_mod': row['id_reg_mod']}, row['reg_mod_tags'])
+    combined_tags += combine_primary_with_secondary(
+        {"id_reg_mod": row["id_reg_mod"]}, row["reg_mod_tags"]
+    )
 
 df_tags = pd.DataFrame(combined_tags)
-mapping = {
-    'id_reg_mod': 'xid_equip',
-    'id': 'id',
-    'name': 'nome',
-    'value': 'valor'
-}
+mapping = {"id_reg_mod": "xid_equip", "id": "id", "name": "nome", "value": "valor"}
 df_tags.rename(columns=mapping, inplace=True)
 
 
@@ -41,7 +40,8 @@ cursor = conn.cursor()
 
 db_table = "DP_TAGS"
 # Criar tabela EQP_TAGS (se não existir)
-cursor.execute(f"""
+cursor.execute(
+    f"""
     CREATE TABLE IF NOT EXISTS "{db_table}" (
         id VARCHAR NOT NULL, 
         xid_equip VARCHAR, 
@@ -49,7 +49,8 @@ cursor.execute(f"""
         valor VARCHAR, 
         PRIMARY KEY (id)
     );
-""")
+"""
+)
 
 df_sqlite_eqp_tgas = pd.read_sql_query(f"SELECT * FROM {db_table}", conn)
 primary_key = "id"
@@ -72,11 +73,14 @@ if ids_remover_modbus:
 
 if not df_tags_atuializar.empty:
     for index, row in df_tags_atuializar.iterrows():
-        cursor.execute(f"""
+        cursor.execute(
+            f"""
             UPDATE {db_table}
             SET xid_equip = ?, nome = ?, valor = ?
             WHERE id = ?
-        """, (row['xid_equip'], row['nome'], row['valor'], row['id']))
+        """,
+            (row["xid_equip"], row["nome"], row["valor"], row["id"]),
+        )
     print(f"\n\tAtualizados {len(df_tags_atuializar)} registros em {db_table}.")
 
 if not df_novas_tags.empty:

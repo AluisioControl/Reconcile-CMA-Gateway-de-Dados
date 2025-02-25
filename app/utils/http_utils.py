@@ -1,7 +1,8 @@
+import asyncio
 from typing import Any, Dict, Optional
 
 import aiohttp
-import asyncio
+
 
 async def fetch_with_retry(
     url: str,

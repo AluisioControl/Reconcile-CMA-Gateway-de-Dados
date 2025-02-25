@@ -1,7 +1,5 @@
-from app.reconcile import gateway
-from app.reconcile import eqp_modbus
-from app.reconcile import eqp_tags
-from app.reconcile import dp_modbus
+from app.reconcile import dp_modbus, eqp_modbus, eqp_tags, gateway
+
 # from app.reconcile import dp_tags
 
 # import json

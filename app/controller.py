@@ -38,6 +38,7 @@ from .settings import configs
 
 semaphore = Semaphore(configs.MAX_PARALLEL_REQUESTS)
 
+
 async def fetch_and_parse_register_modbus(register_data):
     async with semaphore:
         register_data = await fetch_register_modbus_by_id(
@@ -111,7 +112,9 @@ async def main():
         host=configs.host, auth_token=configs.auth_token
     )
     # get gateway by name
-    gateways = [gateway for gateway in gateways if gateway["name"] == configs.gateway_name]
+    gateways = [
+        gateway for gateway in gateways if gateway["name"] == configs.gateway_name
+    ]
     if not gateways:
         raise ValueError(f"Gateway {configs.gateway_name} não encontrado")
     for gateway in gateways:

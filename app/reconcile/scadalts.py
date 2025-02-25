@@ -1,151 +1,174 @@
 import json
+
 import pandas as pd
-from app.scadalts import auth_ScadaLTS, send_data_to_scada, import_datasource_modbus, import_datapoint_modbus
-from app.translator import all_translates, map_fields, translate
 
-"""
-dp = datapoint = registers
-eqp = equipment = datasource = sensores
-
-Este script processa dados de hardware a partir de arquivos JSON e os importa para o ScadaLTS.
-
-O script executa os seguintes passos:
-1. Carrega dados de hardware de um arquivo JSON.
-2. Filtra e mapeia os campos de dados de acordo com traduções predefinidas.
-3. Renomeia as colunas com base no mapeamento.
-4. Filtra linhas com valores nulos ou vazios em 'xid_equip'.
-5. Autentica no ScadaLTS.
-6. Importa os dados como fontes de dados no ScadaLTS.
-7. Repete o processo para pontos de dados.
-
-Funções:
-- auth_ScadaLTS: Autentica no ScadaLTS.
-- send_data_to_scada: Envia dados para o ScadaLTS.
-- import_datasource_modbus: Importa uma fonte de dados para o ScadaLTS.
-- import_datapoint_modbus: Importa um ponto de dados para o ScadaLTS.
-- all_translates: Fornece todos os mapeamentos de tradução.
-- map_fields: Mapeia campos com base nos mapeamentos de tradução.
-- translate: Traduza campos individuais.
-
-Processamento de Dados:
-- Carrega dados de 'data.json'.
-- Filtra linhas únicas com base em 'id_sen'.
-- Mapeia e renomeia colunas com base em traduções predefinidas.
-- Filtra linhas com valores nulos ou vazios em 'xid_equip'.
-- Importa os dados processados para o ScadaLTS como fontes de dados e pontos de dados.
-
-Nota:
-- O script assume a presença de 'data.json' no diretório atual.
-- O script usa pandas para manipulação de dados e json para análise de arquivos JSON.
-
-"""
-
-print("Processando dados de Sensores...")
-# Load hardware data from JSON files
-with open("./data.json") as f:
-    # Parse each hardware data
-    data = json.load(f)
-
-data_fields = list(data[0].keys())
-
-df = pd.DataFrame(data)
-
-# filtar unicos pela coluna id_sen
-df = df.drop_duplicates(subset=["id_sen"])
-
-mapping = map_fields(
-    base_translate=all_translates,
-    base_in="Lógica de montagem",
-    base_out="Import ScadaLTS",
+from app.scadalts import (
+    auth_ScadaLTS,
+    import_datapoint_dnp3,
+    import_datapoint_modbus,
+    import_datasource_dnp3,
+    import_datasource_modbus,
+    send_data_to_scada,
 )
-# reduzir o mapping para os campos que existem data_fields
-mapping = {k: v for k, v in mapping.items() if k in data_fields}
-df = df.rename(columns=mapping)
-# remover coluna duplicada por conta da tradução
-df = df.loc[:, ~df.columns.duplicated()]
-out_fields = [
-    "xid_equip", "updatePeriodType", "enabled", "host", 
-    "maxReadBitCount", "maxReadRegisterCount", 
-    "maxWriteRegisterCount", "port", "retries", "timeout", "updatePeriods"
+from app.translator import all_translates, map_fields
+
+# Constantes para campos de saída
+DATASOURCE_MODBUS_FIELDS = [
+    "xid_equip",
+    "updatePeriodType",
+    "enabled",
+    "host",
+    "maxReadBitCount",
+    "maxReadRegisterCount",
+    "maxWriteRegisterCount",
+    "port",
+    "retries",
+    "timeout",
+    "updatePeriods",
 ]
-df = df[out_fields] # Selecionar apenas os campos de saída
 
-# remover os xid_equip com valores nulos ou vazios
-df = df[df['xid_equip'].notna() & df['xid_equip'].str.strip().astype(bool)]
-
-print("login ScadaLTS")
-auth_ScadaLTS()
-
-# import datapoints
-for index, row in df.iterrows():
-    print("\nsend datasource to ScalaLTS:", row.to_dict(), "\n")
-    datasource = import_datasource_modbus(
-        xid_equip=row['xid_equip'],
-        updatePeriodType=row['updatePeriodType'],
-        enabled=row['enabled'],
-        host=row['host'],
-        maxReadBitCount=row['maxReadBitCount'],
-        maxReadRegisterCount=row['maxReadRegisterCount'],
-        maxWriteRegisterCount=row['maxWriteRegisterCount'],
-        port=row['port'],
-        retries=row['retries'],
-        timeout=row['timeout'],
-        updatePeriods=row['updatePeriods']
-    )
-    send_data_to_scada(datasource)
-
-##########################
-# PROCESSAR OS REGISTROS #
-##########################
-
-# Load hardware data from JSON files
-with open("./data.json") as f:
-    # Parse each hardware data
-    data = json.load(f)
-
-data_fields = list(data[0].keys())
-
-df = pd.DataFrame(data)
-
-# remover os id_reg_mod com valores nulos ou vazios -isolar os dos modbus
-df = df[df['id_reg_mod'].notna() & df['id_reg_mod'].str.strip().astype(bool)]
-
-mapping = map_fields(
-    base_translate=all_translates,
-    base_in="Lógica de montagem",
-    base_out="Import ScadaLTS",
-)
-# reduzir o mapping para os campos que existem data_fields
-mapping = {k: v for k, v in mapping.items() if k in data_fields}
-
-df = df.rename(columns=mapping)
-
-# remover coluna duplicada por conta da tradução
-df = df.loc[:, ~df.columns.duplicated()]
-
-out_fields = [
-    "xid_sensor", "range", "modbusDataType", "additive", 
-    "bit", "multiplier", "offset", "slaveId",
-    "xid_equip", "enabled", "nome"
+DATASOURCE_DNP3_FIELDS = [
+    "xid_equip",
+    "eventsPeriodType",
+    "enabled",
+    "host",
+    "port",
+    "rbePollPeriods",
+    "retries",
+    "slaveAddress",
+    "sourceAddress",
+    "staticPollPeriods",
 ]
-df = df[out_fields]
 
-# remover os xid_equip com valores nulos ou vazios
-df = df[df['xid_equip'].notna() & df['xid_equip'].str.strip().astype(bool)]
+DATAPOINT_MODBUS_FIELDS = [
+    "xid_sensor",
+    "range",
+    "modbusDataType",
+    "additive",
+    "bit",
+    "multiplier",
+    "offset",
+    "slaveId",
+    "xid_equip",
+    "enabled",
+    "nome",
+]
 
-for index, row in df.iterrows():
-    print("\nSend datapoint to ScadaLTS:", row.to_json(), "\n")	
-    datasource = import_datapoint_modbus(
-        xid_sensor=row['xid_sensor'],
-        range=row['range'],
-        modbusDataType=row['modbusDataType'],
-        additive=row['additive'], 
-        bit=row['bit'],
-        multiplier=row['multiplier'],
-        offset=row['offset'],
-        slaveId=row['slaveId'],
-        xid_equip=row['xid_equip'],
-        enabled=row['enabled'],
-        nome=row['nome'],
+DATAPOINT_DNP3_FIELDS = [
+    "xid_sensor",
+    "controlCommand",
+    "dnp3DataType",
+    "index",
+    "timeoff",
+    "timeon",
+    "xid_equip",
+    "enable",
+]
+
+
+def load_json_data(file_path):
+    """Carrega dados de um arquivo JSON e retorna um DataFrame."""
+    try:
+        with open(file_path, "r") as f:
+            data = json.load(f)
+        return pd.DataFrame(data)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        print(f"Erro ao carregar o arquivo {file_path}: {e}")
+        raise
+
+
+def process_data(df, mapping, out_fields, filter_column="xid_equip", unique_key=None):
+    """Processa o DataFrame: filtra, mapeia e seleciona campos."""
+    if unique_key:
+        df = df.drop_duplicates(subset=[unique_key])
+    if filter_column in df.columns:
+        df = df[df[filter_column].notna() & df[filter_column].str.strip().astype(bool)]
+    df = df.rename(columns={k: v for k, v in mapping.items() if k in df.columns})
+    df = df.loc[:, ~df.columns.duplicated()]  # Remove colunas duplicadas
+    df = df[out_fields]  # Seleciona apenas os campos desejados
+    if filter_column in df.columns:
+        df = df[df[filter_column].notna() & df[filter_column].str.strip().astype(bool)]
+    return df
+
+
+def send_to_scada(df, import_function):
+    """Envia cada linha do DataFrame para o ScadaLTS usando a função de importação fornecida."""
+    if df is None:
+        print("DataFrame vazio.")
+        return
+    for _, row in df.iterrows():
+        try:
+            data = import_function(**row.to_dict())
+            send_data_to_scada(data)
+            print(f"Dados enviados: {row.to_dict()}")
+        except Exception as e:
+            print(f"Erro ao enviar dados: {e}")
+
+
+def main():
+    """Função principal que coordena o processamento e envio de dados para o ScadaLTS."""
+
+    # Processar e importar fontes de dados
+    print("Processando dados de Sensores...")
+    df_data_all = load_json_data("./data.json")
+
+    # Autenticação
+    print("Login ScadaLTS")
+    auth_ScadaLTS()
+
+    # Carregar mapeamento de campos
+    mapping = map_fields(
+        base_translate=all_translates,
+        base_in="Lógica de montagem",
+        base_out="Import ScadaLTS",
     )
-    send_data_to_scada(datasource)
+
+    # Processar e importar datasources (sensores modbus)
+    if "id_sen" in df_data_all.columns:
+        print("\nProcessando datasources modbus...")
+        df_datasources = process_data(
+            df_data_all, mapping, DATASOURCE_MODBUS_FIELDS, unique_key="id_sen"
+        )
+        print("\nEnviando datasources modbus para o ScadaLTS...")
+        send_to_scada(df_datasources, import_datasource_modbus)
+
+    # Processar e importar datapoints (registradores modbus)
+    print(df_data_all["id_reg_mod"])
+    print(df_data_all.columns)
+    if "id_reg_mod" in df_data_all.columns:
+        print("\nProcessando datapoints modbus...")
+        df_datapoints = process_data(
+            df_data_all, mapping, DATAPOINT_MODBUS_FIELDS, filter_column="id_reg_mod"
+        )
+        print("\nEnviando datapoint modbus para o ScadaLTS...")
+        send_to_scada(df_datapoints, import_datapoint_modbus)
+    else:
+        print("Não há dados de datapoints modbus.")
+
+    # Processar e importar datasources (sensores dnp3)
+    if "id_sen_dnp3" in df_data_all.columns:
+        print("\nProcessando datasources dnp3...")
+        df_datasources = process_data(
+            df_data_all, mapping, DATASOURCE_DNP3_FIELDS, unique_key="id_sen_dnp3"
+        )
+        print("n\Enviando datasource dnp3 para o ScadaLTS...")
+        send_to_scada(df_datasources, import_datasource_dnp3)
+    else:
+        print("Não há dados de datasources dnp3.")
+
+    # Processar e importar datapoints (registradores dnp3)
+    if "id_reg_dnp3" in df_data_all.columns:
+        print("\nProcessando datapoints dnp3...")
+        df_datapoints = process_data(
+            df_data_all, mapping, DATAPOINT_DNP3_FIELDS, filter_column="id_reg_dnp3"
+        )
+        print("n\Enviando datapoint dnp3 para o ScadaLTS...")
+        send_to_scada(df_datapoints, import_datapoint_dnp3)
+    else:
+        print("Não há dados de datapoints dnp3.")
+
+    print("Processamento concluído!")
+
+
+if __name__ == "__main__":
+    main()
