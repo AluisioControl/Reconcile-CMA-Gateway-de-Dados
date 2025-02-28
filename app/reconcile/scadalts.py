@@ -99,8 +99,8 @@ def send_to_scada(df, import_function):
     for _, row in df.iterrows():
         try:
             data = import_function(**row.to_dict())
+            print(f"Dados: {row.to_dict()}\n")
             send_data_to_scada(data)
-            print(f"Dados enviados: {row.to_dict()}")
         except Exception as e:
             print(f"Erro ao enviar dados: {e}")
 

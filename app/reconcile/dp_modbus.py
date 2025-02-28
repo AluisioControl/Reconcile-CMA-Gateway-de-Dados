@@ -6,6 +6,7 @@ import sqlite3
 
 import pandas as pd
 
+from app.logger import logger
 from app.translator import (
     map_fields,
     registradores_modbus_translate,
@@ -25,6 +26,10 @@ df = pd.DataFrame(data)
 
 # Filtrar únicos pela coluna id_reg_mod
 df = df.drop_duplicates(subset=["id_reg_mod"])
+
+# convert col id_reg_mod to string
+df["id_reg_mod"] = df["id_reg_mod"].astype(str)
+
 # Filter por id_reg_mod não nulo ou vazio
 df = df[df["id_reg_mod"].notnull() & (df["id_reg_mod"] != "")]
 
@@ -59,6 +64,7 @@ df = df.loc[:, ~df.columns.duplicated()]
 
 
 # Conectar ao banco SQLite
+logger.info(f"Conectando ao banco de dados SQLite em {sqlite_db_path}")
 conn = sqlite3.connect(sqlite_db_path)
 cursor = conn.cursor()
 db_table = "DP_MODBUS_IP"  # Nome da tabela no banco de dados

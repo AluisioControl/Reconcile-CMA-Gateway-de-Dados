@@ -15,21 +15,35 @@ data_fields = list(data[0].keys())
 
 df = pd.DataFrame(data)
 
-df = df[["id_reg_mod", "reg_mod_tags"]]
+# Salvar as tags dos sensores modbus e dnp3 na tabela EQP_TAGS
+print("\ncolunas:", df.columns)
+modbus_keys = ["id_sen", "sen_mod_tags"]
+dnp3_keys = ["id_sen_dnp3", "sen_dnp3_tags"]
 
-# remover os id_reg_mod com valores nulos ou vazios
-df = df[df["id_reg_mod"].notna() & df["id_reg_mod"].str.strip().astype(bool)]
+df = df[modbus_keys]
 
-# precisamos pegar o valor de reg_mod_tags que é um json e transformar em um DataFrame
+# remover registros duplicados
+df = df.drop_duplicates(subset=["id_sen"])
+
+print("\nDados brutos\n", df)
+exit(0)
+
+# convert col id_sen to string
+df["id_sen"] = df["id_sen"].astype(str)
+
+# remover os id_sen com valores nulos ou vazios
+df = df[df["id_sen"].notna() & df["id_sen"].str.strip().astype(bool)]
+
+# precisamos pegar o valor de sen_mod_tags que é um json e transformar em um DataFrame
 combined_tags = []
-df["reg_mod_tags"] = df["reg_mod_tags"].apply(lambda x: json.loads(x))
+df["sen_mod_tags"] = df["sen_mod_tags"].apply(lambda x: json.loads(x))
 for index, row in df.iterrows():
     combined_tags += combine_primary_with_secondary(
-        {"id_reg_mod": row["id_reg_mod"]}, row["reg_mod_tags"]
+        {"id_sen": row["id_sen"]}, row["sen_mod_tags"]
     )
 
 df_tags = pd.DataFrame(combined_tags)
-mapping = {"id_reg_mod": "xid_equip", "id": "id", "name": "nome", "value": "valor"}
+mapping = {"id_sen": "xid_equip", "id": "id", "name": "nome", "value": "valor"}
 df_tags.rename(columns=mapping, inplace=True)
 
 

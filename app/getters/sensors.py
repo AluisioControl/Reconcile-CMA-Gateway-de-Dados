@@ -1,5 +1,6 @@
-import aiohttp
 import json
+
+import aiohttp
 
 from app.utils.http_utils import fetch_with_retry
 
@@ -44,10 +45,14 @@ async def fetch_sensors_modbus(
         Exception: Se a requisição falhar ou retornar um status diferente de 200.
     """
     params = {}
-    if page: params["page"] = page
-    if size: params["size"] = size
-    if type: params["type"] = type
-    if actualization_period: params["actualizationPeriod"] = actualization_period
+    if page:
+        params["page"] = page
+    if size:
+        params["size"] = size
+    if type:
+        params["type"] = type
+    if actualization_period:
+        params["actualizationPeriod"] = actualization_period
     if name:
         params["name"] = name
     if model:
@@ -108,11 +113,16 @@ async def fetch_sensors_dnp(
         Exception: Se a requisição falhar ou retornar um status diferente de 200.
     """
     params = {}
-    if page: params["page"] = page
-    if size: params["size"] = size
-    if type: params["type"] = type
-    if actualization_period: params["actualizationPeriod"] = actualization_period
-    if hardware_id: params["hardwareId"] = hardware_id
+    if page:
+        params["page"] = page
+    if size:
+        params["size"] = size
+    if type:
+        params["type"] = type
+    if actualization_period:
+        params["actualizationPeriod"] = actualization_period
+    if hardware_id:
+        params["hardwareId"] = hardware_id
     if name:
         params["name"] = name
     if manufacturer_id:

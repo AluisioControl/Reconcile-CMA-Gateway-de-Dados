@@ -17,6 +17,9 @@ df = pd.DataFrame(data)
 
 df = df[["id_reg_mod", "reg_mod_tags"]]
 
+# convert col id_reg_mod to string
+df["id_reg_mod"] = df["id_reg_mod"].astype(str)
+
 # remover os id_reg_mod com valores nulos ou vazios
 df = df[df["id_reg_mod"].notna() & df["id_reg_mod"].str.strip().astype(bool)]
 
@@ -38,7 +41,7 @@ print("\nconfigs.sqlite_db_path:", configs.sqlite_db_path)
 conn = sqlite3.connect(configs.sqlite_db_path)
 cursor = conn.cursor()
 
-db_table = "DP_TAGS"
+db_table = "EQP_TAGS"
 # Criar tabela EQP_TAGS (se não existir)
 cursor.execute(
     f"""

@@ -111,6 +111,7 @@ async def main():
     gateways = await fetch_all_gateways(
         host=configs.host, auth_token=configs.auth_token
     )
+    print("gateway disponíveis:", ", ".join([gw["name"] for gw in gateways]))
     # get gateway by name
     gateways = [
         gateway for gateway in gateways if gateway["name"] == configs.gateway_name

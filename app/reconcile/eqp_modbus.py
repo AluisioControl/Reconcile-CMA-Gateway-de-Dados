@@ -63,6 +63,9 @@ df = df[out_fields]
 print(df)
 # print(df[out_fields])
 
+# convert type column xid_equip to string
+df["xid_equip"] = df["xid_equip"].astype(str)
+
 # remover os xid_equip com valores nulos ou vazios
 df = df[df["xid_equip"].notna() & df["xid_equip"].str.strip().astype(bool)]
 

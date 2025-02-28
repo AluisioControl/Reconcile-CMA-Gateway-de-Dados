@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 import re
 import time
@@ -8,24 +7,26 @@ from io import BytesIO
 import pycurl
 from dotenv import load_dotenv
 
+from app.logger import logger
+
 if not load_dotenv():
     raise Exception("Could not load .env file")
 
 # Localização do arquivo de log
-LOG_LINUX = "./logs/scadalts_imports.log"
+# LOG_LINUX = "./logs/scadalts_imports.log"
 # LOG_WINDOWS = os.getenv("LOG_WINDOWS")
 
 # Configuração do logging
-log_formatter = logging.Formatter(
-    "[GATEWAY-CMA] %(asctime)s - %(levelname)s - %(funcName)s - %(message)s"
-)
+# log_formatter = logging.Formatter(
+#     "[GATEWAY-CMA] %(asctime)s - %(levelname)s - %(funcName)s - %(message)s"
+# )
 
-# Para salvar no arquivo em vez de usar SysLogHandler
-log_handler = logging.FileHandler(LOG_LINUX)
-log_handler.setFormatter(log_formatter)
-logger = logging.getLogger()
-logger.addHandler(log_handler)
-logger.setLevel(logging.WARNING)  # Configura o nível mínimo para WARNING
+# # Para salvar no arquivo em vez de usar SysLogHandler
+# log_handler = logging.FileHandler(LOG_LINUX)
+# log_handler.setFormatter(log_formatter)
+# logger = logging.getLogger()
+# logger.addHandler(log_handler)
+# logger.setLevel(logging.WARNING)  # Configura o nível mínimo para WARNING
 
 """
 dp = datapoint = registers
@@ -221,7 +222,7 @@ def send_data_to_scada(raw_data):
         c.close()
         response = buffer.getvalue().decode("utf-8")
         # print(response)
-        print("send_data_to_scada", raw_data)
+        print("send_data_to_scada", raw_data, "\n\n")
     except ConnectionError as e:
         logger.error(f"Erro ao enviar dados ao SCADA-LTS: {e}")
 
