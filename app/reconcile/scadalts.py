@@ -81,12 +81,15 @@ def process_data(df, mapping, out_fields, filter_column="xid_equip", unique_key=
     """Processa o DataFrame: filtra, mapeia e seleciona campos."""
     if unique_key:
         df = df.drop_duplicates(subset=[unique_key])
+
     if filter_column in df.columns:
+        df[filter_column] = df[filter_column].astype(str)
         df = df[df[filter_column].notna() & df[filter_column].str.strip().astype(bool)]
     df = df.rename(columns={k: v for k, v in mapping.items() if k in df.columns})
     df = df.loc[:, ~df.columns.duplicated()]  # Remove colunas duplicadas
     df = df[out_fields]  # Seleciona apenas os campos desejados
     if filter_column in df.columns:
+        df[filter_column] = df[filter_column].astype(str)
         df = df[df[filter_column].notna() & df[filter_column].str.strip().astype(bool)]
     return df
 
