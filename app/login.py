@@ -33,6 +33,8 @@ def relogin():
 
 
 if __name__ == "__main__":
+    from dotenv import load_dotenv
+    load_dotenv()
     host = os.environ.get("GWTDADOS_HOST")
     username = os.environ.get("GWTDADOS_USERNAME")
     password = os.environ.get("GWTDADOS_PASSWORD")
