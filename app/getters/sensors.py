@@ -1,4 +1,5 @@
 import aiohttp
+import json
 
 from app.utils.http_utils import fetch_with_retry
 
@@ -11,8 +12,8 @@ async def fetch_sensors_modbus(
     name: str = None,
     model: str = None,
     gateway_name: str = None,
-    type: str = "SENSOR",
-    actualization_period: str = "MINUTES",
+    type: str = None,
+    actualization_period: str = None,
     active: bool = None,
     manufacturer_id: str = None,
     hardware_id: str = None,
@@ -42,12 +43,11 @@ async def fetch_sensors_modbus(
     Raises:
         Exception: Se a requisição falhar ou retornar um status diferente de 200.
     """
-    params = {
-        "page": page,
-        "size": size,
-        "type": type,
-        "actualizationPeriod": actualization_period,
-    }
+    params = {}
+    if page: params["page"] = page
+    if size: params["size"] = size
+    if type: params["type"] = type
+    if actualization_period: params["actualizationPeriod"] = actualization_period
     if name:
         params["name"] = name
     if model:
@@ -76,8 +76,8 @@ async def fetch_sensors_dnp(
     name: str = None,
     model: str = None,
     gateway_name: str = None,
-    type: str = "SENSOR",
-    actualization_period: str = "MINUTES",
+    type: str = None,
+    actualization_period: str = None,
     active: bool = None,
     manufacturer_id: str = "",
     hardware_id: str = "",
@@ -107,13 +107,12 @@ async def fetch_sensors_dnp(
     Raises:
         Exception: Se a requisição falhar ou retornar um status diferente de 200.
     """
-    params = {
-        "page": page,
-        "size": size,
-        "type": type,
-        "actualizationPeriod": actualization_period,
-        "hardwareId": hardware_id,
-    }
+    params = {}
+    if page: params["page"] = page
+    if size: params["size"] = size
+    if type: params["type"] = type
+    if actualization_period: params["actualizationPeriod"] = actualization_period
+    if hardware_id: params["hardwareId"] = hardware_id
     if name:
         params["name"] = name
     if manufacturer_id:
@@ -170,6 +169,7 @@ def parse_sensor_modbus_data(data_sensores):
         "id_hw_sen": data_sensores.get("hardware", {}).get("id", None),
         "name_hw_sen": data_sensores.get("hardware", {}).get("name", None),
         "sapId_hd_sen": data_sensores.get("hardware", {}).get("sapId", None),
+        "sen_mod_tags": json.dumps(data_sensores.get("tags", {})),
     }
     return parsed_data
 
@@ -224,6 +224,7 @@ def parse_sensor_dnp_data(data_sensor_dnp3):
         "name_sen_dnp3_cma": data_sensor_dnp3.get("cma", {}).get("name", None),
         "ip_sen_dnp3_cma": data_sensor_dnp3.get("cma", {}).get("ip", None),
         "active_sen_dnp3_cma": data_sensor_dnp3.get("cma", {}).get("active", None),
+        "sen_dnp3_tags": json.dumps(data_sensor_dnp3.get("tags", {})),
     }
     return parsed_data
 
