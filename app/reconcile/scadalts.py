@@ -2,6 +2,8 @@ import json
 
 import pandas as pd
 
+from app.logger import logger
+
 from app.scadalts import (
     auth_ScadaLTS,
     import_datapoint_dnp3,
@@ -101,11 +103,14 @@ def send_to_scada(df, import_function):
         return
     for _, row in df.iterrows():
         try:
+            if row.isnull().values.any():
+                logger.error(f"Faltando dados: {row.to_dict()}")
+                continue
             data = import_function(**row.to_dict())
             print(f"Dados: {row.to_dict()}\n")
             send_data_to_scada(data)
         except Exception as e:
-            print(f"Erro ao enviar dados: {e}")
+            logger.error(f"Erro ao enviar dados: {e}")
 
 
 def main():

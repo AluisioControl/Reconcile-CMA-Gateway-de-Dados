@@ -3,7 +3,7 @@
 Esse projeto tem como objetivo coletar dados de sensores da API .... e consiliar a base do middleware com a base as informações da API.
 
 ## Pre-requisites
-instale o uv
+instale o uv (gerenciador de pacotes do python)
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
@@ -18,17 +18,17 @@ uv sync
 cp .env_sample .env
 ```
 
-## load envs:
+## load envs: (não é necessário)
 ```bash	
-source ./loadenv.sh
+source ./loadenvs.sh
 ```
 
-## get auth token:
+## pegar o auth token:
 ```bash
 PYTHONPATH=$(pwd) uv run python app/login.py
 ```
 
-## run tests:
+## rodar os tests:
 ```bash
 PYTHONPATH=$(pwd) uv run python tests/test.py
 ```
@@ -40,6 +40,9 @@ PYTHONPATH=$(pwd) uv run pythno -m app.controller
 
 ## conciliar as informações coletadas com a base de dados do middleware
 ```bash
-PYTHONPATH=$(pwd) uv run python -m app.reconcile.reconciliar
+# reconciliar com o scadalts
+PYTHONPATH=$(pwd) uv run python -m app.reconcile.scadalts
+# reconciliar com o cma_gateway_db
+PYTHONPATH=$(pwd) uv run python -m app.reconcile.cma_gateway_db
 ```
 

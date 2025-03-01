@@ -12,22 +12,6 @@ from app.logger import logger
 if not load_dotenv():
     raise Exception("Could not load .env file")
 
-# Localização do arquivo de log
-# LOG_LINUX = "./logs/scadalts_imports.log"
-# LOG_WINDOWS = os.getenv("LOG_WINDOWS")
-
-# Configuração do logging
-# log_formatter = logging.Formatter(
-#     "[GATEWAY-CMA] %(asctime)s - %(levelname)s - %(funcName)s - %(message)s"
-# )
-
-# # Para salvar no arquivo em vez de usar SysLogHandler
-# log_handler = logging.FileHandler(LOG_LINUX)
-# log_handler.setFormatter(log_formatter)
-# logger = logging.getLogger()
-# logger.addHandler(log_handler)
-# logger.setLevel(logging.WARNING)  # Configura o nível mínimo para WARNING
-
 """
 dp = datapoint = registers
 eqp = equipment = datasource = sensores
@@ -207,7 +191,6 @@ def auth_ScadaLTS():
 # Função para envio de dados para o SCADA-LTS
 # -------------------------------------------------------------
 def send_data_to_scada(raw_data):
-
     try:
         buffer = BytesIO()
         c = pycurl.Curl()
@@ -296,6 +279,24 @@ def import_datapoint_modbus(
     enabled,
     nome,
 ):
+    required_params = {
+        "xid_sensor": xid_sensor,
+        "range": range,
+        "modbusDataType": modbusDataType,
+        "additive": additive,
+        "bit": bit,
+        "multiplier": multiplier,
+        "offset": offset,
+        "slaveId": slaveId,
+        "xid_equip": xid_equip,
+        "enabled": enabled,
+        "nome": nome,
+    }
+     # Verifica se algum parâmetro é None
+    for param_name, param_value in required_params.items():
+        if param_value is "null" or param_value is None:
+            logger.error(f"import_datapoint_modbus(xid_sensor={xid_sensor}): O campo '{param_name}' não pode ser None")
+            raise ValueError(f"import_datapoint_modbus(xid_sensor={xid_sensor}) O campo '{param_name}' não pode ser None")
     try:
         raw_data = (
             "callCount=1\n"
