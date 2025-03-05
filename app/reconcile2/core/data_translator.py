@@ -10,5 +10,4 @@ class DataTranslator:
         self.mapping = mapping
 
     def translate(self, df: pd.DataFrame) -> pd.DataFrame:
-        print("Mapping:", self.mapping)
         return df.rename(columns=self.mapping)

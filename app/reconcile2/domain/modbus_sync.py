@@ -20,7 +20,9 @@ class DpModbusDataSynchronizer(BaseDataSynchronizer):
         if changes["remove"]: # se houver registros a remover
             query = f"DELETE FROM {self.table_name} WHERE {self.primary_key} IN (\"{'","'.join(map(str, changes['remove']))}\")"
             db.execute(query)
-            logger.info(f"\n\tRemovidos {len(changes['remove'])} registros.")
+            logger.info(f"Removidos {len(changes['remove'])} registros.")
+        else:
+            logger.info("Nenhum dispositivo foi remover.")
 
         if not changes["update"].empty: # se houver registros a atualizar
             for _, row in changes["update"].iterrows():
@@ -47,10 +49,14 @@ class DpModbusDataSynchronizer(BaseDataSynchronizer):
                     str(row["xid_sensor"]),
                 )
                 db.execute(update_query, values)
-            logger.info(f"\n\tAtualizados {len(changes['update'])} registros.")
+            logger.info(f"Atualizados {len(changes['update'])} registros.")
+        else:
+            logger.info("Nenhum dispositivo foi atualizado.")
 
         if not changes["new"].empty: # se houver registros a inserir
             changes["new"].to_sql(
                 self.table_name, db.connection, if_exists="append", index=False
             )
-            logger.info(f"\n\tInseridos {len(changes['new'])} novos registros.")
+            logger.info(f"Inseridos {len(changes['new'])} novos registros.")
+        else:
+            logger.info("Nenhum novo dispositivo foi inserido.")

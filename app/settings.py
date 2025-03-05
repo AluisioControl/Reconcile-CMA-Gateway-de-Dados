@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 
 from .login import get_auth_token, relogin
+from app.logger import logger
 
 if not load_dotenv():
     raise Exception("Could not load .env file")
@@ -32,12 +33,21 @@ class Configs:
             )
             self.initialized = True
 
+    @property
+    async def auth_token(self):
+        if self._auth_token is None:
+            self._auth_token = await get_auth_token(self.host, self.username, self.password)
+        return self._auth_token
+
+    @auth_token.setter
+    async def auth_token(self, value):
+        self._auth_token = value
+
     async def login(self):
+        logger.info("Logging in...")
         self.auth_token = await get_auth_token(self.host, self.username, self.password)
+        logger.info("Logged in successfully. ({})".format(self.auth_token))
 
 
 configs = Configs()
-configs.auth_token = asyncio.run(
-    get_auth_token(configs.host, configs.username, configs.password)
-)
 configs.relogin = relogin

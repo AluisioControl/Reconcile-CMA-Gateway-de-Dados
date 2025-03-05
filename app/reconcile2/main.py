@@ -5,6 +5,10 @@ from app.reconcile2.core.db_schema import GenericSchema
 from app.reconcile2.domain.gateway_sync import GatewayDataSynchronizer
 from app.reconcile2.domain.modbus_sync import DpModbusDataSynchronizer
 from app.reconcile2.domain.equipment_sync import ModbusEquipmentSynchronizer
+from app.reconcile2.domain.tags_sync import (
+    EqpTagsDataSynchronizer,
+    DpTagsDataSynchronizer,
+)
 
 from app.getters.gateway import parse_gateway_data
 from app.settings import configs
@@ -16,7 +20,9 @@ from app.translator import (
     sensores_modbus_translate,
     hardware_translate,
 )
-
+import pandas as pd
+import json
+from app.utils.data import combine_primary_with_secondary
 
 def create_gateway_schema() -> GenericSchema:
     return GenericSchema(
@@ -30,7 +36,6 @@ def create_gateway_schema() -> GenericSchema:
         },
         primary_key="xid_gateway",
     )
-
 
 def create_modbus_schema() -> GenericSchema:
     return GenericSchema(
@@ -60,7 +65,6 @@ def create_modbus_equipment_schema() -> GenericSchema:
             "xid_equip": "VARCHAR NOT NULL",
             "xid_gateway": "VARCHAR",
             "fabricante": "VARCHAR",
-            "marca": "VARCHAR",
             "modelo": "VARCHAR",
             "type": "VARCHAR",
             "sap_id": "VARCHAR",
@@ -102,6 +106,30 @@ def create_equipment_dnp3_schema() -> GenericSchema:
         primary_key="xid_equip",
     )
 
+def create_eqp_tags_schema() -> GenericSchema:
+    return GenericSchema(
+        table_name="TAGS_EQP",
+        fields={
+            "id": "VARCHAR NOT NULL",
+            "xid_equip": "VARCHAR",
+            "nome": "VARCHAR",
+            "valor": "VARCHAR",
+        },
+        primary_key="id",
+    )
+
+def create_dp_tags_schema() -> GenericSchema:
+    return GenericSchema(
+        table_name="DP_TAGS",
+        fields={
+            "id": "VARCHAR NOT NULL",
+            "xid_sensor": "VARCHAR",
+            "nome": "VARCHAR",
+            "valor": "VARCHAR",
+        },
+        primary_key="id",
+    )
+
 def sync_gateways():
     logger.info("Sincronizando dados de gateways...")
     loader = GatewayDataLoader("./cma_gateways.json", parse_gateway_data)
@@ -120,7 +148,7 @@ def sync_gateways():
         schema.initialize(db)
         synchronizer.synchronize(df_translated, db)
 
-    print("\nAtualização gateway concluída!")
+    print("Atualização gateway concluída!\n")
 
 
 def sync_dp_modbus():
@@ -164,7 +192,7 @@ def sync_dp_modbus():
         schema.initialize(db)
         synchronizer.synchronize(df_final, db)
 
-    print("\nAtualização dp modbus concluída!")
+    print("Atualização dp modbus concluída!\n")
 
 def sync_eqp_modbus():
     logger.info("Sincronizando dados de equipamentos Modbus...")
@@ -180,26 +208,116 @@ def sync_eqp_modbus():
     synchronizer = ModbusEquipmentSynchronizer()
 
     df = loader.load() # carregar dados do arquivo json
-    df = df.drop_duplicates(subset=["id_sen"]) # remover registros duplicados
+    df = df.drop_duplicates(subset=["id_sen"]) # remover sensores duplicados
     df["id_sen"] = df["id_sen"].astype(str) # converter para string evitando erros
     df = df[df["id_sen"].notnull() & (df["id_sen"] != "")] # remover registros nulos ou vazios
     df_translated = translator.translate(df) # traduzir campos cma_web to cma_gateway
-    # show columns after translation
-
+    # remover colunas duplicadas depois da tradução
+    df_translated = df_translated.loc[:, ~df_translated.columns.duplicated()]
     df_final = df_translated[synchronizer.OUTPUT_FIELDS] # manter apenas as colunas desejadas
-    print("Sensorres traduzidos:")
-    # mostrar o primeiro registro traduzido em formato de dicionário
-    print(df_final.iloc[0].to_dict())
     # remover colunas duplicadas depois da
     with DatabaseConnection(configs.sqlite_db_path) as db:
         schema.initialize(db)
         synchronizer.synchronize(df_final, db)
-    print("\nAtualização equipamento modbus concluída!")
+    print("Atualização equipamento modbus concluída!\n")
+
+def sync_eqp_tags(): # tags dos registradores
+    # Registradores = xid_sensor = sensor = id_reg_mod 
+    # Sensor = xid_equip = id_sensor = Equipamento
+    # CREATE TABLE IF NOT EXISTS "EQP_TAGS" (
+    #         id VARCHAR NOT NULL, 
+    #         xid_equip VARCHAR, 
+    #         nome VARCHAR, 
+    #         valor VARCHAR, 
+    #         PRIMARY KEY (id)
+    # );
+    logger.info("Sincronizando tags de equipamentos...")
+    loader = JsonDataLoader("./data.json")
+    translator = DataTranslator(
+        map_fields(
+            gateway_translate + hardware_translate,
+            "Lógica de montagem",
+            "Banco Middlware",
+        )
+    )
+    schema = create_eqp_tags_schema()
+    synchronizer = EqpTagsDataSynchronizer()
+
+    df = loader.load() # carregar dados do arquivo json
+    df = df.drop_duplicates(subset=["id_sen"]) # remover registros duplicados
+    df["id_sen"] = df["id_sen"].astype(str) # converter para string evitando erros
+    # remover os id_sen com valores nulos ou vazios
+    df = df[df["id_sen"].notna() & df["id_sen"].str.strip().astype(bool)]
+
+    df["sen_mod_tags"] = df["sen_mod_tags"].apply(lambda x: json.loads(x))
+
+    # precisamos pegar o valor de sen_mod_tags que é um json e transformar em um DataFrame
+    combined_tags = []
+    for index, row in df.iterrows():
+        combined_tags += combine_primary_with_secondary(
+            {"id_sen": row["id_sen"]}, row["sen_mod_tags"]
+        )
+
+    df_final = pd.DataFrame(combined_tags)
+    df_final.rename(columns={"id_sen": "xid_equip", "name": "nome", "value": "valor"}, inplace=True)
+    df_final["id"] = df_final["id"].astype(str)
+    df_final["xid_equip"] = df_final["xid_equip"].astype(str)
+    df_final["nome"] = df_final["nome"].astype(str)
+    df_final["valor"] = df_final["valor"].astype(str)
+
+    with DatabaseConnection(configs.sqlite_db_path) as db:
+        schema.initialize(db)
+        synchronizer.synchronize(df_final, db)
+    print("Atualização tags de equipamentos concluída!\n")
+
+def sync_dp_tags(): # tags dos sensores
+    logger.info("Sincronizando tags dos sensores...")
+    loader = JsonDataLoader("./data.json")
+    translator = DataTranslator(
+        map_fields(
+            gateway_translate + hardware_translate,
+            "Lógica de montagem",
+            "Banco Middlware",
+        )
+    )
+    schema = create_dp_tags_schema()
+    synchronizer = DpTagsDataSynchronizer()
+
+    df = loader.load() # carregar dados do arquivo json
+    df = df.drop_duplicates(subset=["id_sen"]) # remover registros duplicados
+    df["id_sen"] = df["id_sen"].astype(str) # converter para string evitando erros
+    # remover os id_sen com valores nulos ou vazios
+    df = df[df["id_sen"].notna() & df["id_sen"].str.strip().astype(bool)]
+
+    df["sen_mod_tags"] = df["sen_mod_tags"].apply(lambda x: json.loads(x))
+
+    combined_tags = []
+    for index, row in df.iterrows():
+        combined_tags += combine_primary_with_secondary(
+            {"id_sen": row["id_sen"]}, row["sen_mod_tags"]
+        )
+
+    df_final = pd.DataFrame(combined_tags)
+    df_final.rename(columns={"id_sen": "xid_sensor", "name": "nome", "value": "valor"}, inplace=True)
+    df_final["id"] = df_final["id"].astype(str)
+    df_final["xid_sensor"] = df_final["xid_sensor"].astype(str)
+    df_final["nome"] = df_final["nome"].astype(str)
+    df_final["valor"] = df_final["valor"].astype(str)
+
+    with DatabaseConnection(configs.sqlite_db_path) as db:
+        schema.initialize(db)
+        synchronizer.synchronize(df_final, db)
+    print("Atualização tags dos sensores concluída!\n")
 
 if __name__ == "__main__":
-    print("Iniciando sincronização...")
+    print("Iniciando sincronização...\n")
     logger.info("Iniciando sincronização...")
-    # sync_gateways()
-    # sync_dp_modbus()
+    sync_gateways()
     sync_eqp_modbus()
+    # sync_eqp_dnp3() # TODO: implementar sincronização de equipamentos dnp3
+    sync_eqp_tags() # TODO: implementar tags de equipamentos dnp3
+    sync_dp_modbus()
+    sync_dp_tags() # TODO: implementar tags de equipamentos dnp3
     # Adicionar outras sincronizações aqui
+    logger.info("Sincronização concluída!")
+    print("\nSincronização concluída!\n")

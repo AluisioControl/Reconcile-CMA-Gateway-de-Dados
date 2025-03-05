@@ -6,6 +6,8 @@ from app.reconcile2.core.data_synchronizer import BaseDataSynchronizer
 from app.reconcile2.core.db_connection import DatabaseConnection
 from app.translator import gateway_translate, map_fields
 
+from app.logger import logger
+
 
 class GatewayDataSynchronizer(BaseDataSynchronizer):
     """Sincroniza dados de gateways"""
@@ -18,20 +20,23 @@ class GatewayDataSynchronizer(BaseDataSynchronizer):
     ):
         if changes["remove"]:
             query = f"DELETE FROM {self.table_name} WHERE {self.primary_key} IN (\"{'","'.join(map(str, changes['remove']))}\")"
-            print("\n\tquery:", query)
             db.execute(query)
-            print(f"\tRemovidos {len(changes['remove'])} registros.")
+            logger.info(f"Removido o gateway de id: {changes['remove']}")
+        else:
+            logger.info("Nenhum gateway removido")
 
         if not changes["update"].empty:
             changes["update"].to_sql(
                 self.table_name, db.connection, if_exists="replace", index=False
             )
-            print(f"\tAtualizados {len(changes['update'])} registros.")
+            logger.info(f"Atualizado gateway: {changes['update']["xid_gateway"].to_list()}")
+        else:
+            logger.info("Nenhum gateway atualizado")
 
         if not changes["new"].empty:
-            print("\n\tInserindo novos registros:")
-            print(changes["new"])
             changes["new"].to_sql(
                 self.table_name, db.connection, if_exists="append", index=False
             )
-            print(f"\n\tInseridos {len(changes['new'])} novos registros.")
+            logger.info(f"Inserido novo gateway {changes['new']["xid_gateway"].to_list()}")
+        else:
+            logger.info("Nenhum novo gateway inserido")

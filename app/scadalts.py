@@ -292,7 +292,7 @@ def import_datapoint_modbus(
         "enabled": enabled,
         "nome": nome,
     }
-     # Verifica se algum parâmetro é None
+    # Verifica se algum parâmetro é None
     for param_name, param_value in required_params.items():
         if param_value is "null" or param_value is None:
             logger.error(f"import_datapoint_modbus(xid_sensor={xid_sensor}): O campo '{param_name}' não pode ser None")

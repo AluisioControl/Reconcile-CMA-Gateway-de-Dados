@@ -6,6 +6,8 @@ from app.reconcile2.core.data_synchronizer import BaseDataSynchronizer
 from app.reconcile2.core.db_connection import DatabaseConnection
 from app.utils.data import combine_primary_with_secondary
 
+from app.logger import logger
+
 
 class EquipmentDataSynchronizer(BaseDataSynchronizer):
     """Sincroniza dados de equipamentos com o banco de dados"""

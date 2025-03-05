@@ -44,7 +44,6 @@ out_fields = [
     "xid_equip",
     "xid_gateway",
     "fabricante",
-    # "marca",
     "modelo",
     "type",
     "sap_id",
@@ -80,8 +79,7 @@ cursor.execute(
     CREATE TABLE IF NOT EXISTS "EQP_MODBUS_IP" (
         xid_equip VARCHAR NOT NULL, 
         xid_gateway VARCHAR, 
-        fabricante VARCHAR, 
-        marca VARCHAR, 
+        fabricante VARCHAR,
         modelo VARCHAR, 
         type VARCHAR, 
         sap_id VARCHAR, 
