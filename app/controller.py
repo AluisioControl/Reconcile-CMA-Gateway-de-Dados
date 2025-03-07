@@ -43,7 +43,7 @@ async def fetch_and_parse_register_modbus(register_data):
     async with semaphore:
         register_data = await fetch_register_modbus_by_id(
             host=configs.host,
-            auth_token=configs.auth_token,
+            auth_token=await configs.auth_token,
             register_modbus_id=register_data["id"],
         )
         return parse_register_modbus_data(register_data)
@@ -53,7 +53,7 @@ async def collect_registers_modbus(sensor_modbus_id):
     registers = []
     registers_data = await fetch_registers_modbus(
         host=configs.host,
-        auth_token=configs.auth_token,
+        auth_token=await configs.auth_token,
         sensor_modbus_id=sensor_modbus_id,
         size=configs.MAX_PAGE_SIZE,
     )
@@ -71,7 +71,7 @@ async def fetch_and_parse_register_dnp(register_data):
     async with semaphore:
         register_data = await fetch_register_dnp_by_id(
             host=configs.host,
-            auth_token=configs.auth_token,
+            auth_token=await configs.auth_token,
             register_dnp_id=register_data["id"],
         )
     return parse_register_dnp_data(register_data)
@@ -81,7 +81,7 @@ async def collect_registers_dnp(sensor_dnp_id):
     registers = []
     registers_data = await fetch_registers_dnp(
         host=configs.host,
-        auth_token=configs.auth_token,
+        auth_token=await configs.auth_token,
         sensor_dnp_id=sensor_dnp_id,
         size=configs.MAX_PAGE_SIZE,
     )
@@ -109,7 +109,7 @@ async def main():
     hardwares_combined = []
     sensors_parsed = []
     gateways = await fetch_all_gateways(
-        host=configs.host, auth_token=configs.auth_token
+        host=configs.host, auth_token=await configs.auth_token
     )
     print("gateway disponíveis:", ", ".join([gw["name"] for gw in gateways]))
     # get gateway by name
@@ -122,21 +122,21 @@ async def main():
         gateway_id = gateway["id"]
         print("gateway name:", gateway["name"])
         gateway_data = await fetch_gateway_by_id(
-            host=configs.host, auth_token=configs.auth_token, gateway_id=gateway_id
+            host=configs.host, auth_token=await configs.auth_token, gateway_id=gateway_id
         )
         list_gateways.append(gateway_data)
         gateway_parsed = parse_gateway_data(gateway_data)
         hardware_combine_sensors_modbus = []
         hardware_combine_sensors_dnp = []
         hardwares = await fetch_hardwares_by_gateway(
-            host=configs.host, auth_token=configs.auth_token, cma_gateway_id=gateway_id
+            host=configs.host, auth_token=await configs.auth_token, cma_gateway_id=gateway_id
         )
         for hardware in hardwares:
             hardware_id = hardware["id"]
             print("\t nome hardware", hardware["name"])
             hardware_data = await fetch_hardware_by_id(
                 host=configs.host,
-                auth_token=configs.auth_token,
+                auth_token=await configs.auth_token,
                 hardware_id=hardware_id,
             )
             list_hardwares.append(hardware_data)
@@ -147,7 +147,7 @@ async def main():
             sensors_parsed = []
             sensors = await fetch_sensors_modbus(
                 host=configs.host,
-                auth_token=configs.auth_token,
+                auth_token=await configs.auth_token,
                 hardware_id=hardware_id,
             )
             sensor_combine_registers_modbus = []
@@ -161,7 +161,7 @@ async def main():
                     print("\t\t Nome sensor modbus:", sensor["name"])
                     sensor_data = await fetch_sensor_modbus_by_id(
                         host=configs.host,
-                        auth_token=configs.auth_token,
+                        auth_token=await configs.auth_token,
                         sensor_modbus_id=sensor_id,
                     )
                     list_sensors_modbus.append(sensor_data)
@@ -193,7 +193,7 @@ async def main():
             sensors_dnp_parsed = []
             sensors_dnp = await fetch_sensors_dnp(
                 host=configs.host,
-                auth_token=configs.auth_token,
+                auth_token=await configs.auth_token,
                 active=True,
                 hardware_id=hardware_id,
             )
@@ -209,7 +209,7 @@ async def main():
                     print("\t\t sensor_dnp_id", sensor_dnp_id)
                     sensor_dnp_data = await fetch_sensor_dnp_by_id(
                         host=configs.host,
-                        auth_token=configs.auth_token,
+                        auth_token=await configs.auth_token,
                         sensor_dnp_id=sensor_dnp_id,
                     )
                     list_sensors_dnp3.append(sensor_dnp_data)

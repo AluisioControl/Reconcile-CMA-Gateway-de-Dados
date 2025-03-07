@@ -21,6 +21,7 @@ class Configs:
 
     def __init__(self):
         if not hasattr(self, "initialized"):
+            self._auth_token = None
             self.host = os.environ.get("GWTDADOS_HOST")
             self.username = os.environ.get("GWTDADOS_USERNAME")
             self.password = os.environ.get("GWTDADOS_PASSWORD")
