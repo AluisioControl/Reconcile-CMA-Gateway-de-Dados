@@ -11,6 +11,7 @@ from app.reconcile2.scadalts.mutations import (
     import_datapoint_modbus,
     import_datasource_modbus,
     send_data_to_scada,
+    send_to_scada,
 )
 
 
@@ -79,7 +80,5 @@ class DpModbusDataSynchronizer(BaseDataSynchronizer):
         """Sincroniza os dados com o ScadaLTS"""
         print("DpModbusDataSynchronizer... Syncing with ScadaLTS")
         df = df[DATAPOINT_MODBUS_FIELDS]
-        for _, row in df.iterrows():
-            scada_data = import_datapoint_modbus(**row.to_dict())
-            send_data_to_scada(raw_data=scada_data)
-        logger.info(f"Enviados {len(df)} registros para o ScadaLTS.")
+        send_to_scada(df=df, import_function=import_datapoint_modbus)
+        logger.info(f"Enviados {len(df)} registros para o ScadaLTS, usando {import_datapoint_modbus} como função de importação.")

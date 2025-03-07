@@ -8,11 +8,11 @@ from app.reconcile2.core.db_connection import DatabaseConnection
 from app.reconcile2.scadalts.mutations import (
     DATASOURCE_DNP3_FIELDS,
     DATASOURCE_MODBUS_FIELDS,
+    send_to_scada
 )
 from app.scadalts import (
     import_datasource_dnp3,
     import_datasource_modbus,
-    send_data_to_scada,
 )
 from app.utils.data import combine_primary_with_secondary
 
@@ -103,10 +103,8 @@ class EquipmentDataSynchronizer(BaseDataSynchronizer):
             import_function = import_datasource_dnp3
         else:
             raise ValueError(f"Tabela não suportada: {self.table_name}")
-        for _, row in df.iterrows():
-            scada_data = import_function(**row.to_dict())
-            send_data_to_scada(raw_data=scada_data)
-        logger.info(f"Enviados {len(df)} registros para o ScadaLTS.")
+        send_to_scada(df=df, import_function=import_function)
+        logger.info(f"Enviados {len(df)} registros para o ScadaLTS, usando {import_function.__name__}.")
 
 
 class ModbusEquipmentSynchronizer(EquipmentDataSynchronizer):

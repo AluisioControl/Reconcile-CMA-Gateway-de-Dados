@@ -1,4 +1,5 @@
 import json
+from time import sleep
 
 import pandas as pd
 
@@ -108,6 +109,7 @@ def send_to_scada(df, import_function):
             data = import_function(**row.to_dict())
             print(f"Dados: {row.to_dict()}\n")
             send_data_to_scada(data)
+            sleep(0.3)
         except Exception as e:
             logger.error(f"Erro ao enviar dados: {e}")
 
