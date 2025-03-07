@@ -3,8 +3,9 @@ import os
 
 from dotenv import load_dotenv
 
-from .login import get_auth_token, relogin
 from app.logger import logger
+
+from .login import get_auth_token, relogin
 
 if not load_dotenv():
     raise Exception("Could not load .env file")
@@ -36,7 +37,9 @@ class Configs:
     @property
     async def auth_token(self):
         if self._auth_token is None:
-            self._auth_token = await get_auth_token(self.host, self.username, self.password)
+            self._auth_token = await get_auth_token(
+                self.host, self.username, self.password
+            )
         return self._auth_token
 
     @auth_token.setter

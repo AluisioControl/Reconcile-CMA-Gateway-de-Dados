@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Set
-from app.logger import logger
+
 import pandas as pd
+
+from app.logger import logger
 
 from .db_connection import DatabaseConnection
 
@@ -57,42 +59,57 @@ class BaseDataSynchronizer(DataSynchronizer):
         # só manter as colunas que existem no existing_data
         df = df[existing_data.columns]
 
-
         new_records = df[~df[self.primary_key].isin(existing_data[self.primary_key])]
         common_records = df[df[self.primary_key].isin(existing_data[self.primary_key])]
 
         # IDs a remover (registros que não estão no DataFrame são desnecessários)
-        df_ids = set(df[self.primary_key]) # conjunto de IDs do DataFrame
-        db_ids = set(existing_data[self.primary_key]) # conjunto de IDs do banco de dados
-        records_to_remove = db_ids - df_ids # IDs a remover são os IDs do banco de dados que não estão no DataFrame
+        df_ids = set(df[self.primary_key])  # conjunto de IDs do DataFrame
+        db_ids = set(
+            existing_data[self.primary_key]
+        )  # conjunto de IDs do banco de dados
+        records_to_remove = (
+            db_ids - df_ids
+        )  # IDs a remover são os IDs do banco de dados que não estão no DataFrame
 
         # Regra de negócio: só atualizar registros que possuem diferenças
         if not common_records.empty:
             # Normalizar os tipos de dados entre os DataFrames novos e existentes (se necessário)
             if list(common_records.dtypes) != list(existing_data.dtypes):
-                for column in common_records.columns: # analisar cada coluna
-                    if common_records[column].dtype != existing_data[column].dtype: # se o tipo de dado for diferente
+                for column in common_records.columns:  # analisar cada coluna
+                    if (
+                        common_records[column].dtype != existing_data[column].dtype
+                    ):  # se o tipo de dado for diferente
                         # converter o tipo de dado da coluna do DataFrame comum para o tipo de dado do DataFrame existente
                         try:
-                            existing_data[column] = existing_data[column].astype(common_records[column].dtype)
-                            print(f"{column} convertido para {common_records[column].dtype}")
+                            existing_data[column] = existing_data[column].astype(
+                                common_records[column].dtype
+                            )
+                            logger.warning(
+                                f"{column} convertido para {common_records[column].dtype}"
+                            )
                         except ValueError as e:
-                            print(f"Erro ao converter {column} para {existing_data[column].dtype}: {e}")
+                            logger.error(
+                                f"Erro ao converter {column} para {existing_data[column].dtype}: {e}"
+                            )
                             # converter o tipo de ambos os DataFrames para o tipo para string
                             common_records[column] = common_records[column].astype(str)
                             existing_data[column] = existing_data[column].astype(str)
 
             # regra de negócio: só atualizar registros que possuem diferenças
-            merged_df = existing_data.merge(common_records, indicator=True, how='outer') # merge dos DataFrames
-            changed_rows_df = merged_df[merged_df['_merge'] == 'right_only'] # registros que possuem diferenças
-            diff_df = changed_rows_df.drop('_merge', axis=1) # remover a coluna _merge
-            common_records = diff_df # atualizar common_records para os registros que possuem diferenças
+            merged_df = existing_data.merge(
+                common_records, indicator=True, how="outer"
+            )  # merge dos DataFrames
+            changed_rows_df = merged_df[
+                merged_df["_merge"] == "right_only"
+            ]  # registros que possuem diferenças
+            diff_df = changed_rows_df.drop("_merge", axis=1)  # remover a coluna _merge
+            common_records = diff_df  # atualizar common_records para os registros que possuem diferenças
 
         return {
-            "new": new_records, # novos registros para inserir
-            "update": common_records, # registros necessitando atualizar
-            "remove": records_to_remove, # IDs a remover (registros que não estão no DataFrame são desnecessários)
-            "total": len(df), # total de registros de entrada
+            "new": new_records,  # novos registros para inserir
+            "update": common_records,  # registros necessitando atualizar
+            "remove": records_to_remove,  # IDs a remover (registros que não estão no DataFrame são desnecessários)
+            "total": len(df),  # total de registros de entrada
         }
 
     def _log_changes(self, changes: Dict[str, any]):
@@ -122,21 +139,27 @@ class BaseDataSynchronizer(DataSynchronizer):
         # 1. Remover registros que não estão mais no DataFrame
         if changes["remove"]:
             self._remove_records(changes["remove"], db)
-            logger.info(f"Removidos {len(changes['remove'])} registros da tabela {self.table_name}.")
+            logger.info(
+                f"Removidos {len(changes['remove'])} registros da tabela {self.table_name}."
+            )
         else:
             logger.info(f"Nenhum registro removido da tabela {self.table_name}.")
 
         # 2. Atualizar registros existentes
         if not changes["update"].empty:
             self._update_records(changes["update"], db)
-            logger.info(f"Atualizados {len(changes['update'])} registros da tabela {self.table_name}.")
+            logger.info(
+                f"Atualizados {len(changes['update'])} registros da tabela {self.table_name}."
+            )
         else:
             logger.info(f"Nenhum registro atualizado da tabela {self.table_name}.")
 
         # 3. Inserir novos registros
         if not changes["new"].empty:
             self._insert_records(changes["new"], db)
-            logger.info(f"Inseridos {len(changes['new'])} novos registros na tabela {self.table_name}.")
+            logger.info(
+                f"Inseridos {len(changes['new'])} novos registros na tabela {self.table_name}."
+            )
         else:
             logger.info(f"Nenhum novo registro inserido na tabela {self.table_name}.")
 
@@ -151,4 +174,5 @@ class BaseDataSynchronizer(DataSynchronizer):
 
     def _insert_records(self, records: pd.DataFrame, db: DatabaseConnection):
         """Insere novos registros no banco de dados"""
+        print("Inserindo registros no banco de dados")
         records.to_sql(self.table_name, db.connection, if_exists="append", index=False)

@@ -2,11 +2,10 @@ from typing import Dict
 
 import pandas as pd
 
+from app.logger import logger
 from app.reconcile2.core.data_synchronizer import BaseDataSynchronizer
 from app.reconcile2.core.db_connection import DatabaseConnection
 from app.translator import gateway_translate, map_fields
-
-from app.logger import logger
 
 
 class GatewayDataSynchronizer(BaseDataSynchronizer):
@@ -29,7 +28,9 @@ class GatewayDataSynchronizer(BaseDataSynchronizer):
             changes["update"].to_sql(
                 self.table_name, db.connection, if_exists="replace", index=False
             )
-            logger.info(f"Atualizado gateway: {changes['update']["xid_gateway"].to_list()}")
+            logger.info(
+                f"Atualizado gateway: {changes['update']["xid_gateway"].to_list()}"
+            )
         else:
             logger.info("Nenhum gateway atualizado")
 
@@ -37,6 +38,8 @@ class GatewayDataSynchronizer(BaseDataSynchronizer):
             changes["new"].to_sql(
                 self.table_name, db.connection, if_exists="append", index=False
             )
-            logger.info(f"Inserido novo gateway {changes['new']["xid_gateway"].to_list()}")
+            logger.info(
+                f"Inserido novo gateway {changes['new']["xid_gateway"].to_list()}"
+            )
         else:
             logger.info("Nenhum novo gateway inserido")

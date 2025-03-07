@@ -1,10 +1,10 @@
 from typing import Dict
 
+import pandas as pd
+
+from app.logger import logger
 from app.reconcile2.core.data_synchronizer import BaseDataSynchronizer
 from app.reconcile2.core.db_connection import DatabaseConnection
-from app.logger import logger
-
-import pandas as pd
 
 
 class DpTagsDataSynchronizer(BaseDataSynchronizer):
@@ -25,7 +25,7 @@ class DpTagsDataSynchronizer(BaseDataSynchronizer):
 
         if not changes["update"].empty:
             changes["update"].to_sql(
-            self.table_name, db.connection, if_exists="replace", index=False
+                self.table_name, db.connection, if_exists="replace", index=False
             )
             logger.info(f"Atualizado DP_TAG: {changes['update']['id'].to_list()}")
         else:
@@ -33,7 +33,7 @@ class DpTagsDataSynchronizer(BaseDataSynchronizer):
 
         if not changes["new"].empty:
             changes["new"].to_sql(
-            self.table_name, db.connection, if_exists="append", index=False
+                self.table_name, db.connection, if_exists="append", index=False
             )
             logger.info(f"Inserido novo DP_TAG {changes['new']['id'].to_list()}")
         else:
@@ -58,7 +58,7 @@ class EqpTagsDataSynchronizer(BaseDataSynchronizer):
 
         if not changes["update"].empty:
             changes["update"].to_sql(
-            self.table_name, db.connection, if_exists="replace", index=False
+                self.table_name, db.connection, if_exists="replace", index=False
             )
             logger.info(f"Atualizado EQP_TAG: {changes['update']['id'].to_list()}")
         else:
@@ -66,7 +66,7 @@ class EqpTagsDataSynchronizer(BaseDataSynchronizer):
 
         if not changes["new"].empty:
             changes["new"].to_sql(
-            self.table_name, db.connection, if_exists="append", index=False
+                self.table_name, db.connection, if_exists="append", index=False
             )
             logger.info(f"Inserido novo EQP_TAG {changes['new']['id'].to_list()}")
         else:

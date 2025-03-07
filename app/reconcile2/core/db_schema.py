@@ -21,7 +21,7 @@ class GenericSchema(DatabaseSchema):
         self.primary_key = primary_key
 
     def initialize(self, db: DatabaseConnection):
-        """Cria a tabela no banco de dados, se não existir"""	
+        """Cria a tabela no banco de dados, se não existir"""
         fields_str = ", ".join(f"{k} {v}" for k, v in self.fields.items())
         query = f"""
             CREATE TABLE IF NOT EXISTS "{self.table_name}" (

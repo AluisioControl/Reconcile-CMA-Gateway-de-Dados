@@ -74,7 +74,7 @@ def load_json_data(file_path):
             data = json.load(f)
         return pd.DataFrame(data)
     except (FileNotFoundError, json.JSONDecodeError) as e:
-        print(f"Erro ao carregar o arquivo {file_path}: {e}")
+        logger.error(f"Erro ao carregar o arquivo {file_path}: {e}")
         raise
 
 
@@ -98,7 +98,7 @@ def process_data(df, mapping, out_fields, filter_column="xid_equip", unique_key=
 def send_to_scada(df, import_function):
     """Envia cada linha do DataFrame para o ScadaLTS usando a função de importação fornecida."""
     if df is None:
-        print("DataFrame vazio.")
+        logger.warning("DataFrame vazio.")
         return
     for _, row in df.iterrows():
         try:
@@ -106,7 +106,7 @@ def send_to_scada(df, import_function):
                 logger.error(f"Faltando dados: {row.to_dict()}")
                 continue
             data = import_function(**row.to_dict())
-            print(f"Dados: {row.to_dict()}\n")
+            logger.info(f"Dados: {row.to_dict()}\n")
             send_data_to_scada(data)
         except Exception as e:
             logger.error(f"Erro ao enviar dados: {e}")
@@ -116,7 +116,7 @@ def main():
     """Função principal que coordena o processamento e envio de dados para o ScadaLTS."""
 
     # Processar e importar fontes de dados
-    print("Processando dados de Sensores...")
+    logger.info("Processando dados de Sensores...")
     df_data_all = load_json_data("./data.json")
 
     # Autenticação

@@ -204,8 +204,7 @@ def send_data_to_scada(raw_data):
         c.perform()
         c.close()
         response = buffer.getvalue().decode("utf-8")
-        # print(response)
-        print("send_data_to_scada", raw_data, "\n\n")
+        logger.info(f"send_data_to_scada {raw_data}")
     except ConnectionError as e:
         logger.error(f"Erro ao enviar dados ao SCADA-LTS: {e}")
 
@@ -295,8 +294,12 @@ def import_datapoint_modbus(
     # Verifica se algum parâmetro é None
     for param_name, param_value in required_params.items():
         if param_value is "null" or param_value is None:
-            logger.error(f"import_datapoint_modbus(xid_sensor={xid_sensor}): O campo '{param_name}' não pode ser None")
-            raise ValueError(f"import_datapoint_modbus(xid_sensor={xid_sensor}) O campo '{param_name}' não pode ser None")
+            logger.error(
+                f"import_datapoint_modbus(xid_sensor={xid_sensor}): O campo '{param_name}' não pode ser None"
+            )
+            raise ValueError(
+                f"import_datapoint_modbus(xid_sensor={xid_sensor}) O campo '{param_name}' não pode ser None"
+            )
     try:
         raw_data = (
             "callCount=1\n"
