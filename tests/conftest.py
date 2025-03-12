@@ -562,8 +562,13 @@ def load_env():
     env_path = os.path.join(os.path.dirname(__file__), "..", ".env")
 
     if os.path.exists(env_path):
+        print("Carregando variáveis de ambiente do .env: ", env_path)
         with open(env_path, "r") as f:
             for line in f:
+                if line.startswith("#"):
+                    continue
+                if not line.strip():
+                    continue
                 key, value = line.strip().split("=", 1)
                 os.environ[key] = value
 

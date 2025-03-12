@@ -176,3 +176,8 @@ class BaseDataSynchronizer(DataSynchronizer):
         """Insere novos registros no banco de dados"""
         print("Inserindo registros no banco de dados")
         records.to_sql(self.table_name, db.connection, if_exists="append", index=False)
+
+    def _get_record_by_ids(self, ids: list, db: DatabaseConnection) -> Set[str]:
+        """Obtém os registros dos IDs fornecidos"""
+        query = f"SELECT * FROM {self.table_name} WHERE {self.primary_key} IN (\"{'","'.join(map(str, ids))}\")"
+        return db.fetch_dataframe(query)

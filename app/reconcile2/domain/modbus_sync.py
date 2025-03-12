@@ -27,11 +27,12 @@ class DpModbusDataSynchronizer(BaseDataSynchronizer):
         """Aplica as alterações no banco de dados"""
         print("DpModbusDataSynchronizer... Applying changes")
         if changes["remove"]:  # se houver registros a remover
-            query = f"DELETE FROM {self.table_name} WHERE {self.primary_key} IN (\"{'","'.join(map(str, changes['remove']))}\")"
-            db.execute(query)
+            records = self._get_record_by_ids(changes["remove"], db)
+            # disable records
+            records["enabled"] = False
+            self._sync_datapoint_scada(df=records)
+            self._remove_records(changes["remove"], db)
             logger.info(f"Removidos {len(changes['remove'])} registros.")
-            # send data to disable in scada
-            print("need to send data to disable in scada")
         else:
             logger.info("Nenhum dispositivo foi remover.")
 

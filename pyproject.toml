@@ -16,4 +16,5 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "isort>=6.0.0",
     "pycurl>=7.45.4",
+    "aioresponses>=0.7.8",
 ]
