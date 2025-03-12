@@ -1,50 +1,76 @@
-# Coleta de dados de sensores
+# Coleta de Dados de Sensores
 
-Esse projeto tem como objetivo coletar dados de sensores da API .... e consiliar a base do middleware com a base as informações da API.
+Este projeto tem como objetivo a coleta de dados de sensores a partir da API especificada e a conciliação dessas informações com a base de dados do middleware.
 
-## Pre-requisites
-instale o uv (gerenciador de pacotes do python)
+## Requisitos
+
+Antes de iniciar, certifique-se de que o gerenciador de pacotes `uv` está instalado. Caso não esteja, utilize o seguinte comando para instalá-lo:
+
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-## install dependencies:
-> Só é necessário na primeira vez ou quando houver alterações nas dependências
+## Instalação de Dependências
+
+A instalação das dependências é necessária apenas na primeira execução ou quando houver alterações nas mesmas.
+
 ```bash
 uv sync
 ```
 
-## create .env file:
-> Só é necessário na primeira vez
+## Configuração do Ambiente
+
+Antes de executar o projeto pela primeira vez, crie o arquivo de variáveis de ambiente:
+
 ```bash
 cp .env_sample .env
 ```
 
-## coletar as informações da API do CMA_WEB
+## Execução dos Módulos
+
+### Coletar Dados da API CMA_WEB
+
+Para coletar as informações da API CMA_WEB, execute:
+
 ```bash
-PYTHONPATH=$(pwd) uv run pythno -m app.collect_cma_web
+PYTHONPATH=$(pwd) uv run python -m app.collect_cma_web
 ```
 
-## conciliar as informações coletadas com a base de dados do middleware
+### Conciliação das Informações com o Middleware
+
+Para reconciliar as informações coletadas com as bases de dados do `CMA_Gateway` e `ScadaLTS`, utilize o comando:
+
 ```bash
-# reconciliar com o CMA_Gateway e o scadalts
 PYTHONPATH=$(pwd) uv run python -m app.reconcile2.main
 ```
 
-## conciliar as informações coletadas com a base de dados do middleware
-```bash
-# reconciliar com o scadalts
-PYTHONPATH=$(pwd) uv run python -m app.reconcile.scadalts
-# reconciliar com o cma_gateway_db
-PYTHONPATH=$(pwd) uv run python -m app.reconcile.cma_gateway_db
-```
+Caso seja necessário conciliar individualmente com cada base de dados, utilize os comandos abaixo:
 
-## pegar o auth token: (Não necessário, só um facilitador)
+- Para reconciliar com o `ScadaLTS`:
+
+  ```bash
+  PYTHONPATH=$(pwd) uv run python -m app.reconcile.scadalts
+  ```
+
+- Para reconciliar com o `CMA_Gateway_DB`:
+
+  ```bash
+  PYTHONPATH=$(pwd) uv run python -m app.reconcile.cma_gateway_db
+  ```
+
+## Obtenção de Token de Autenticação
+
+Embora não seja um passo obrigatório, o seguinte comando pode ser utilizado para facilitar a obtenção do token de autenticação:
+
 ```bash
 PYTHONPATH=$(pwd) uv run python app/login.py
 ```
 
-## rodar os tests:
+## Execução dos Testes
+
+Para rodar a suíte de testes do projeto, utilize:
+
 ```bash
 PYTHONPATH=$(pwd) uv run python tests/test.py
 ```
+
