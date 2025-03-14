@@ -83,7 +83,7 @@ class EquipmentDataSynchronizer(BaseDataSynchronizer):
         """Aplica as alterações ao banco de dados"""
         if changes["remove"]:
             records = self._get_record_by_ids(changes["remove"], db)
-            # disable records
+            records = records.copy()  # evitar problemas de referência
             records["enabled"] = False
             self._sync_datapoint_scada(df=records)
             self._remove_records(changes["remove"], db)

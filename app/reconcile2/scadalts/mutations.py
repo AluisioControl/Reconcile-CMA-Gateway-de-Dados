@@ -3,14 +3,7 @@ import json
 import pandas as pd
 
 from app.logger import logger
-from app.scadalts import (
-    auth_ScadaLTS,
-    import_datapoint_dnp3,
-    import_datapoint_modbus,
-    import_datasource_dnp3,
-    import_datasource_modbus,
-    send_data_to_scada,
-)
+from app.scadalts import send_data_to_scada
 from app.translator import all_translates, map_fields
 
 # Constantes para campos de saída
@@ -98,7 +91,7 @@ def process_data(df, mapping, out_fields, filter_column="xid_equip", unique_key=
 def send_to_scada(df, import_function):
     """Envia cada linha do DataFrame para o ScadaLTS usando a função de importação fornecida."""
     if df is None:
-        logger.warning("DataFrame vazio.")
+        logger.warning(f"send_to_scada {import_function} com DataFrame vazio.")
         return
     for _, row in df.iterrows():
         try:
@@ -106,76 +99,8 @@ def send_to_scada(df, import_function):
                 logger.error(f"Faltando dados: {row.to_dict()}")
                 continue
             data = import_function(**row.to_dict())
-            logger.info(f"Dados: {row.to_dict()}\n")
             send_data_to_scada(data)
         except Exception as e:
             logger.error(f"Erro ao enviar dados: {e}")
-
-
-def main():
-    """Função principal que coordena o processamento e envio de dados para o ScadaLTS."""
-
-    # Processar e importar fontes de dados
-    logger.info("Processando dados de Sensores...")
-    df_data_all = load_json_data("./data.json")
-
-    # Autenticação
-    print("Login ScadaLTS")
-    auth_ScadaLTS()
-
-    # Carregar mapeamento de campos
-    mapping = map_fields(
-        base_translate=all_translates,
-        base_in="Lógica de montagem",
-        base_out="Import ScadaLTS",
-    )
-
-    # Processar e importar datasources (sensores modbus)
-    if "id_sen" in df_data_all.columns:
-        print("\nProcessando datasources modbus...")
-        df_datasources = process_data(
-            df_data_all, mapping, DATASOURCE_MODBUS_FIELDS, unique_key="id_sen"
-        )
-        print("\nEnviando datasources modbus para o ScadaLTS...")
-        send_to_scada(df_datasources, import_datasource_modbus)
-
-    # Processar e importar datapoints (registradores modbus)
-    print(df_data_all["id_reg_mod"])
-    print(df_data_all.columns)
-    if "id_reg_mod" in df_data_all.columns:
-        print("\nProcessando datapoints modbus...")
-        df_datapoints = process_data(
-            df_data_all, mapping, DATAPOINT_MODBUS_FIELDS, filter_column="id_reg_mod"
-        )
-        print("\nEnviando datapoint modbus para o ScadaLTS...")
-        send_to_scada(df_datapoints, import_datapoint_modbus)
-    else:
-        print("Não há dados de datapoints modbus.")
-
-    # Processar e importar datasources (sensores dnp3)
-    if "id_sen_dnp3" in df_data_all.columns:
-        print("\nProcessando datasources dnp3...")
-        df_datasources = process_data(
-            df_data_all, mapping, DATASOURCE_DNP3_FIELDS, unique_key="id_sen_dnp3"
-        )
-        print("n\Enviando datasource dnp3 para o ScadaLTS...")
-        send_to_scada(df_datasources, import_datasource_dnp3)
-    else:
-        print("Não há dados de datasources dnp3.")
-
-    # Processar e importar datapoints (registradores dnp3)
-    if "id_reg_dnp3" in df_data_all.columns:
-        print("\nProcessando datapoints dnp3...")
-        df_datapoints = process_data(
-            df_data_all, mapping, DATAPOINT_DNP3_FIELDS, filter_column="id_reg_dnp3"
-        )
-        print("n\Enviando datapoint dnp3 para o ScadaLTS...")
-        send_to_scada(df_datapoints, import_datapoint_dnp3)
-    else:
-        print("Não há dados de datapoints dnp3.")
-
-    print("Processamento concluído!")
-
-
-if __name__ == "__main__":
-    main()
+            print(f"Erro ao enviar dados: {e}")
+            raise e

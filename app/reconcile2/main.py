@@ -276,6 +276,10 @@ def sync_eqp_tags():  # tags dos registradores
             {"id_sen": row["id_sen"]}, row["sen_mod_tags"]
         )
 
+    if not combined_tags:
+        logger.warning("Nenhuma tag de equipamento modbus encontrada.")
+        return
+
     df_final = pd.DataFrame(combined_tags)
     df_final.rename(
         columns={"id_sen": "xid_equip", "name": "nome", "value": "valor"}, inplace=True
@@ -317,6 +321,10 @@ def sync_dp_tags():  # tags dos sensores
         combined_tags += combine_primary_with_secondary(
             {"id_sen": row["id_sen"]}, row["sen_mod_tags"]
         )
+
+    if not combined_tags:
+        logger.warning("Nenhuma tag de sensor modbus encontrada.")
+        return
 
     df_final = pd.DataFrame(combined_tags)
     df_final.rename(

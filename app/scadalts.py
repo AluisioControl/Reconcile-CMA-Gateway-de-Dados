@@ -181,7 +181,7 @@ def auth_ScadaLTS():
         c.perform()
         c.close()
         response = buffer.getvalue().decode("utf-8")
-        # print(response)
+        print(response)
         print("AUTH SCADA")
     except ConnectionError as e:
         logger.error(f"Erro ao tentar autenticar no SCADA-LTS: {e}")
@@ -204,7 +204,7 @@ def send_data_to_scada(raw_data):
         c.perform()
         c.close()
         response = buffer.getvalue().decode("utf-8")
-        logger.info(f"send_data_to_scada {raw_data}")
+        logger.debug(f"send_data_to_scada {raw_data} response:{response}")
     except ConnectionError as e:
         logger.error(f"Erro ao enviar dados ao SCADA-LTS: {e}")
 

@@ -5,12 +5,16 @@ import pandas as pd
 from app.logger import logger
 from app.reconcile2.core.data_synchronizer import BaseDataSynchronizer
 from app.reconcile2.core.db_connection import DatabaseConnection
+from app.scadalts import (
+    import_datapoint_modbus,
+    import_datasource_modbus,
+)
 from app.reconcile2.scadalts.mutations import (
     DATAPOINT_MODBUS_FIELDS,
     DATASOURCE_MODBUS_FIELDS,
-    import_datapoint_modbus,
-    import_datasource_modbus,
-    send_data_to_scada,
+    # import_datapoint_modbus,
+    # import_datasource_modbus,
+    # send_data_to_scada,
     send_to_scada,
 )
 
@@ -29,6 +33,7 @@ class DpModbusDataSynchronizer(BaseDataSynchronizer):
         if changes["remove"]:  # se houver registros a remover
             records = self._get_record_by_ids(changes["remove"], db)
             # disable records
+            records = records.copy()  # evitar problemas de referência
             records["enabled"] = False
             self._sync_datapoint_scada(df=records)
             self._remove_records(changes["remove"], db)
