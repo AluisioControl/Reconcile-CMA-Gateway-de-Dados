@@ -24,6 +24,7 @@ from app.translator import (
     sensores_modbus_translate,
 )
 from app.utils.data import combine_primary_with_secondary
+from app.scadalts import auth_ScadaLTS
 
 
 def create_gateway_schema() -> GenericSchema:
@@ -345,6 +346,7 @@ if __name__ == "__main__":
     print("Iniciando sincronização...\n")
     logger.info("Iniciando sincronização...")
     sync_gateways()
+    auth_ScadaLTS()
     sync_eqp_modbus()
     # sync_eqp_dnp3() # TODO: implementar sincronização de equipamentos dnp3
     sync_eqp_tags()  # TODO: implementar tags de equipamentos dnp3

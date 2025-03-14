@@ -3,6 +3,7 @@ import os
 import re
 import time
 from io import BytesIO
+import sys
 
 import pycurl
 from dotenv import load_dotenv
@@ -161,6 +162,7 @@ get_json_data("XIDSENS")  # Deve renovar o cookie
 # Rotina de autenticação no SCADA-LTS
 # -------------------------------------------------------------
 def auth_ScadaLTS():
+    logger.info("Autenticando no SCADA-LTS... ")
     if not username or not password:
         print(
             "Erro: Credenciais de acesso ao SCADA-LTS não encontradas no arquivo .env"
@@ -178,14 +180,14 @@ def auth_ScadaLTS():
         c.setopt(c.COOKIEFILE, "")
         c.setopt(c.COOKIEJAR, "cookies")
         c.setopt(c.WRITEDATA, buffer)
+        c.setopt(c.CONNECTTIMEOUT, 10)
         c.perform()
         c.close()
         response = buffer.getvalue().decode("utf-8")
-        print(response)
-        print("AUTH SCADA")
+        logger.info("OK\n")
     except ConnectionError as e:
         logger.error(f"Erro ao tentar autenticar no SCADA-LTS: {e}")
-
+        raise ConnectionError(f"Verifique a conexão com o SCADA-LTS")
 
 # -------------------------------------------------------------
 # Função para envio de dados para o SCADA-LTS
