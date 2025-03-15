@@ -33,10 +33,12 @@ error_handler = logging.FileHandler(LOG_ERROR)
 error_handler.setFormatter(log_formatter)
 error_handler.setLevel(logging.ERROR)  # Aceita ERROR e acima
 
+
 # Filtros personalizados para segregar os níveis
 class DebugFilter(logging.Filter):
     def filter(self, record):
         return record.levelno == logging.DEBUG
+
 
 class InfoWarningFilter(logging.Filter):
     def filter(self, record):
@@ -69,6 +71,7 @@ def test_logging():
     logger.warning("Este é um log de nível WARNING")
     logger.error("Este é um log de nível ERROR")
     logger.debug("Este é um log de nível DEBUG")
+
 
 if __name__ == "__main__":
     test_logging()

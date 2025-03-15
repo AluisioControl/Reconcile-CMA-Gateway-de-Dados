@@ -32,8 +32,8 @@ from app.getters.sensors import (
     parse_sensor_dnp_data,
     parse_sensor_modbus_data,
 )
-from app.utils.data import combine_primary_with_secondary
 from app.logger import logger
+from app.utils.data import combine_primary_with_secondary
 
 from .settings import configs
 
@@ -58,7 +58,9 @@ async def collect_registers_modbus(sensor_modbus_id):
         sensor_modbus_id=sensor_modbus_id,
         size=configs.MAX_PAGE_SIZE,
     )
-    print(f"   - Coletando {len(registers_data["content"])} registros modbus sensor id: {sensor_modbus_id}...")
+    print(
+        f"   - Coletando {len(registers_data["content"])} registros modbus sensor id: {sensor_modbus_id}..."
+    )
     # processar os registros em paralelo
     tasks = [
         fetch_and_parse_register_modbus(register_data)
@@ -87,7 +89,9 @@ async def collect_registers_dnp(sensor_dnp_id):
         sensor_dnp_id=sensor_dnp_id,
         size=configs.MAX_PAGE_SIZE,
     )
-    print(f"   - Coletando {len(registers_data["content"])} registros dnp3 sensor id: {sensor_dnp_id}...")
+    print(
+        f"   - Coletando {len(registers_data["content"])} registros dnp3 sensor id: {sensor_dnp_id}..."
+    )
     # processar os registros em paralelo
     tasks = [
         fetch_and_parse_register_dnp(register_data)
@@ -127,14 +131,18 @@ async def main():
         print(f"gateway name: {gateway["name"]}")
         logger.info(f"gateway name: {gateway["name"]}")
         gateway_data = await fetch_gateway_by_id(
-            host=configs.host, auth_token=await configs.auth_token, gateway_id=gateway_id
+            host=configs.host,
+            auth_token=await configs.auth_token,
+            gateway_id=gateway_id,
         )
         list_gateways.append(gateway_data)
         gateway_parsed = parse_gateway_data(gateway_data)
         hardware_combine_sensors_modbus = []
         hardware_combine_sensors_dnp = []
         hardwares = await fetch_hardwares_by_gateway(
-            host=configs.host, auth_token=await configs.auth_token, cma_gateway_id=gateway_id
+            host=configs.host,
+            auth_token=await configs.auth_token,
+            cma_gateway_id=gateway_id,
         )
         for hardware in hardwares:
             hardware_id = hardware["id"]
@@ -232,7 +240,9 @@ async def main():
                     )
                     if configs.DEBUG:
                         break
-                    logger.info("total de resgistro por sensor:", len(sensors_dnp_parsed))
+                    logger.info(
+                        "total de resgistro por sensor:", len(sensors_dnp_parsed)
+                    )
             # combinar o resultado de hardware com o resultado de sensores
             hardware_combine_sensors_dnp += combine_primary_with_secondary(
                 hardware_parsed, sensor_combine_registers_dnp
@@ -250,7 +260,7 @@ async def main():
         all_flat_data += combine_primary_with_secondary(
             gateway_parsed, hardware_combine_sensors_dnp
         )
-        logger.info(f"total acumulado por hardware: {len(all_flat_data)}" )
+        logger.info(f"total acumulado por hardware: {len(all_flat_data)}")
     logger.info(f"total de registros: {len(all_flat_data)}")
     # Salvar os dados em um arquivo JSON
     with open("data.json", "w") as f:

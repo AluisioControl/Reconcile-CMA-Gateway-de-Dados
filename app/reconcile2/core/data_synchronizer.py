@@ -47,6 +47,15 @@ class BaseDataSynchronizer(DataSynchronizer):
             Dicionário com 'new' (novos registros), 'update' (registros a atualizar),
             'remove' (IDs a remover) e 'total' (total de registros de entrada)
         """
+        if df.empty:
+            return {
+                "new": df,  # df vazio não há novos registros
+                "update": df,  # df vazio não há registros a atualizar
+                "remove": set(
+                    existing_data[self.primary_key]
+                ),  # remover todos os registros existentes
+                "total": len(df),  # total de registros de entrada
+            }
         # verificar se o df tem totas as colunas do existing_data
         if not df.columns.equals(existing_data.columns):
             # quais colunas estão faltando no df

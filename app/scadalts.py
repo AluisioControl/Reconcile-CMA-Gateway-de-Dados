@@ -1,9 +1,9 @@
 import json
 import os
 import re
+import sys
 import time
 from io import BytesIO
-import sys
 
 import pycurl
 from dotenv import load_dotenv
@@ -188,6 +188,7 @@ def auth_ScadaLTS():
     except ConnectionError as e:
         logger.error(f"Erro ao tentar autenticar no SCADA-LTS: {e}")
         raise ConnectionError(f"Verifique a conexão com o SCADA-LTS")
+
 
 # -------------------------------------------------------------
 # Função para envio de dados para o SCADA-LTS
@@ -440,3 +441,121 @@ def import_datapoint_dnp3(
     except ConnectionError as e:
         logger.error(f"Erro no import de datapoint DNP3 para SCADA-LTS")
         return None
+
+
+# -------------------------------------------------------------
+# Função para deletar um Datasource (equipamento) no SCADA-LTS
+# -------------------------------------------------------------
+def delete_datasource(ds_id):  # ds_id = xid_equip
+    """
+    Deleta um datasource/equipamento do SCADA-LTS pelo seu ID numérico.
+
+    Args:
+        ds_id (int): ID do datasource no banco de dados
+
+    Returns:
+        bool: True se a operação foi bem sucedida, False caso contrário
+    """
+    try:
+        buffer = BytesIO()
+        c = pycurl.Curl()
+        c.setopt(
+            c.URL,
+            f"{URL_BASE}/Scada-LTS/dwr/call/plaincall/DataSourceListDwr.deleteDataSource.dwr",
+        )
+        c.setopt(c.POST, 1)
+        raw_data = (
+            "callCount=1\n"
+            "page=/Scada-LTS/data_sources.shtm\n"
+            "httpSessionId=\n"
+            "scriptSessionId=D15BC242A0E69D4251D5585A07806324697\n"
+            "c0-scriptName=DataSourceListDwr\n"
+            "c0-methodName=deleteDataSource\n"
+            "c0-id=0\n"
+            f"c0-param0=number:{ds_id}\n"
+            "batchId=8\n"
+        )
+        c.setopt(c.POSTFIELDS, raw_data)
+        c.setopt(c.COOKIEFILE, "cookies")
+        c.setopt(c.WRITEDATA, buffer)
+        c.perform()
+        status_code = c.getinfo(pycurl.RESPONSE_CODE)
+        c.close()
+
+        response = buffer.getvalue().decode("utf-8")
+        logger.debug(
+            f"delete_datasource(ds_id={ds_id}) response: {status_code} - {response}"
+        )
+
+        return status_code == 200
+    except Exception as e:
+        logger.error(f"Erro ao deletar datasource {ds_id}: {e}")
+        return False
+
+
+# -------------------------------------------------------------
+# Função para deletar um Datapoint (sensor) no SCADA-LTS
+# -------------------------------------------------------------
+def delete_datapoint(ds_id, dp_id):  # dp_id = xid_sensor, sd_id = xid_equip
+    """
+    Deleta um datapoint/sensor do SCADA-LTS pelo seu ID numérico.
+
+    Args:
+        ds_id (int): ID do datasource pai
+        dp_id (int): ID do datapoint no banco de dados
+
+    Returns:
+        bool: True se a operação foi bem sucedida, False caso contrário
+    """
+    try:
+        # Primeiro faz uma requisição GET para o datasource
+        buffer = BytesIO()
+        c = pycurl.Curl()
+        c.setopt(c.URL, f"{URL_BASE}/Scada-LTS/data_source_edit.shtm?dsid={ds_id}")
+        c.setopt(c.COOKIEFILE, "cookies")
+        c.setopt(c.NOBODY, 1)  # HEAD request
+        c.perform()
+        status_code = c.getinfo(pycurl.RESPONSE_CODE)
+        c.close()
+
+        if status_code != 200:
+            logger.error(
+                f"Erro ao acessar datasource {ds_id}: status code {status_code}"
+            )
+            return False
+
+        # Depois faz o DELETE do datapoint
+        buffer = BytesIO()
+        c = pycurl.Curl()
+        c.setopt(
+            c.URL,
+            f"{URL_BASE}/Scada-LTS/dwr/call/plaincall/DataSourceEditDwr.deletePoint.dwr",
+        )
+        c.setopt(c.POST, 1)
+        raw_data = (
+            "callCount=1\n"
+            f"page=/Scada-LTS/data_source_edit.shtm?dsid={ds_id}\n"
+            "httpSessionId=\n"
+            "scriptSessionId=8232C3291DECDA240F228271F5D9F43F20\n"
+            "c0-scriptName=DataSourceEditDwr\n"
+            "c0-methodName=deletePoint\n"
+            "c0-id=0\n"
+            f"c0-param0=number:{dp_id}\n"
+            "batchId=8\n"
+        )
+        c.setopt(c.POSTFIELDS, raw_data)
+        c.setopt(c.COOKIEFILE, "cookies")
+        c.setopt(c.WRITEDATA, buffer)
+        c.perform()
+        status_code = c.getinfo(pycurl.RESPONSE_CODE)
+        c.close()
+
+        response = buffer.getvalue().decode("utf-8")
+        logger.debug(
+            f"delete_datapoint(ds_id={ds_id}, dp_id={dp_id}) response: {status_code} - {response}"
+        )
+
+        return status_code == 200
+    except Exception as e:
+        logger.error(f"Erro ao deletar datapoint {dp_id} do datasource {ds_id}: {e}")
+        return False

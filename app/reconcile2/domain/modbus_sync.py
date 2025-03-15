@@ -5,17 +5,15 @@ import pandas as pd
 from app.logger import logger
 from app.reconcile2.core.data_synchronizer import BaseDataSynchronizer
 from app.reconcile2.core.db_connection import DatabaseConnection
-from app.scadalts import (
-    import_datapoint_modbus,
-    import_datasource_modbus,
-)
-from app.reconcile2.scadalts.mutations import (
+from app.reconcile2.scadalts.mutations import (  # import_datapoint_modbus,; import_datasource_modbus,; send_data_to_scada,
     DATAPOINT_MODBUS_FIELDS,
     DATASOURCE_MODBUS_FIELDS,
-    # import_datapoint_modbus,
-    # import_datasource_modbus,
-    # send_data_to_scada,
     send_to_scada,
+)
+from app.scadalts import (
+    delete_datapoint,
+    import_datapoint_modbus,
+    import_datasource_modbus,
 )
 
 
@@ -32,11 +30,10 @@ class DpModbusDataSynchronizer(BaseDataSynchronizer):
         print("DpModbusDataSynchronizer... Applying changes")
         if changes["remove"]:  # se houver registros a remover
             records = self._get_record_by_ids(changes["remove"], db)
-            # disable records
-            records = records.copy()  # evitar problemas de referência
-            records["enabled"] = False
-            self._sync_datapoint_scada(df=records)
+            records = records.copy()  # Evitar erro de referência
             self._remove_records(changes["remove"], db)
+            for _, record in records.iterrows():
+                delete_datapoint(ds_id=record["xid_equip"], dp_id=record["xid_sensor"])
             logger.info(f"Removidos {len(changes['remove'])} registros.")
         else:
             logger.info("Nenhum dispositivo foi remover.")
@@ -87,4 +84,6 @@ class DpModbusDataSynchronizer(BaseDataSynchronizer):
         print("DpModbusDataSynchronizer... Syncing with ScadaLTS")
         df = df[DATAPOINT_MODBUS_FIELDS]
         send_to_scada(df=df, import_function=import_datapoint_modbus)
-        logger.info(f"Enviados {len(df)} registros para o ScadaLTS, usando {import_datapoint_modbus} como função de importação.")
+        logger.info(
+            f"Enviados {len(df)} registros para o ScadaLTS, usando {import_datapoint_modbus} como função de importação."
+        )

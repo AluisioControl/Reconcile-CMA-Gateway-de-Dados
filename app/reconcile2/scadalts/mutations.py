@@ -101,7 +101,7 @@ def send_to_scada(df, import_function):
                 continue
             data = import_function(**row.to_dict())
             send_data_to_scada(data)
-            sleep(0.1)  # Aguarda 100 ms
+            # sleep(0.3)  # Aguarda 300 ms
         except Exception as e:
             logger.error(f"Erro ao enviar dados: {e}")
             print(f"Erro ao enviar dados: {e}")

@@ -1,4 +1,5 @@
 import json
+import sys
 
 import pandas as pd
 
@@ -15,6 +16,7 @@ from app.reconcile2.domain.tags_sync import (
     DpTagsDataSynchronizer,
     EqpTagsDataSynchronizer,
 )
+from app.scadalts import auth_ScadaLTS
 from app.settings import configs
 from app.translator import (
     gateway_translate,
@@ -24,7 +26,6 @@ from app.translator import (
     sensores_modbus_translate,
 )
 from app.utils.data import combine_primary_with_secondary
-from app.scadalts import auth_ScadaLTS
 
 
 def create_gateway_schema() -> GenericSchema:
@@ -160,9 +161,9 @@ def sync_gateways():
     print("Atualização gateway concluída!\n")
 
 
-def sync_dp_modbus():
+def sync_dp_modbus(df: pd.DataFrame):
     logger.info("Sincronizando dados Modbus...")
-    loader = JsonDataLoader("./data.json")
+    # loader = JsonDataLoader("./data.json")
     translator = DataTranslator(
         map_fields(
             registradores_modbus_translate + sensores_modbus_translate,
@@ -173,7 +174,7 @@ def sync_dp_modbus():
     schema = create_modbus_schema()
     synchronizer = DpModbusDataSynchronizer()
 
-    df = loader.load()  # carregar dados do arquivo json
+    # df = loader.load()  # carregar dados do arquivo json
     df = df.drop_duplicates(subset=["id_reg_mod"])  # remover registros duplicados
     df["id_reg_mod"] = df["id_reg_mod"].astype(
         str
@@ -208,9 +209,9 @@ def sync_dp_modbus():
     print("Atualização dp modbus concluída!\n")
 
 
-def sync_eqp_modbus():
+def sync_eqp_modbus(df: pd.DataFrame):
     logger.info("Sincronizando dados de equipamentos Modbus...")
-    loader = JsonDataLoader("./data.json")
+    # loader = JsonDataLoader("./data.json")
     translator = DataTranslator(
         map_fields(
             gateway_translate + hardware_translate + sensores_modbus_translate,
@@ -221,7 +222,7 @@ def sync_eqp_modbus():
     schema = create_modbus_equipment_schema()
     synchronizer = ModbusEquipmentSynchronizer()
 
-    df = loader.load()  # carregar dados do arquivo json
+    # df = loader.load()  # carregar dados do arquivo json
     df = df.drop_duplicates(subset=["id_sen"])  # remover sensores duplicados
     df["id_sen"] = df["id_sen"].astype(str)  # converter para string evitando erros
     df = df[
@@ -240,18 +241,9 @@ def sync_eqp_modbus():
     print("Atualização equipamento modbus concluída!\n")
 
 
-def sync_eqp_tags():  # tags dos registradores
-    # Registradores = xid_sensor = sensor = id_reg_mod
-    # Sensor = xid_equip = id_sensor = Equipamento
-    # CREATE TABLE IF NOT EXISTS "EQP_TAGS" (
-    #         id VARCHAR NOT NULL,
-    #         xid_equip VARCHAR,
-    #         nome VARCHAR,
-    #         valor VARCHAR,
-    #         PRIMARY KEY (id)
-    # );
+def sync_eqp_tags(df: pd.DataFrame):  # tags dos registradores
     logger.info("Sincronizando tags de equipamentos...")
-    loader = JsonDataLoader("./data.json")
+    # loader = JsonDataLoader("./data.json")
     translator = DataTranslator(
         map_fields(
             gateway_translate + hardware_translate,
@@ -262,7 +254,7 @@ def sync_eqp_tags():  # tags dos registradores
     schema = create_eqp_tags_schema()
     synchronizer = EqpTagsDataSynchronizer()
 
-    df = loader.load()  # carregar dados do arquivo json
+    # df = loader.load()  # carregar dados do arquivo json
     df = df.drop_duplicates(subset=["id_sen"])  # remover registros duplicados
     df["id_sen"] = df["id_sen"].astype(str)  # converter para string evitando erros
     # remover os id_sen com valores nulos ou vazios
@@ -296,9 +288,9 @@ def sync_eqp_tags():  # tags dos registradores
     print("Atualização tags de equipamentos concluída!\n")
 
 
-def sync_dp_tags():  # tags dos sensores
+def sync_dp_tags(df: pd.DataFrame):  # tags dos sensores
     logger.info("Sincronizando tags dos sensores...")
-    loader = JsonDataLoader("./data.json")
+    # loader = JsonDataLoader("./data.json")
     translator = DataTranslator(
         map_fields(
             gateway_translate + hardware_translate,
@@ -309,7 +301,7 @@ def sync_dp_tags():  # tags dos sensores
     schema = create_dp_tags_schema()
     synchronizer = DpTagsDataSynchronizer()
 
-    df = loader.load()  # carregar dados do arquivo json
+    # df = loader.load()  # carregar dados do arquivo json
     df = df.drop_duplicates(subset=["id_sen"])  # remover registros duplicados
     df["id_sen"] = df["id_sen"].astype(str)  # converter para string evitando erros
     # remover os id_sen com valores nulos ou vazios
@@ -345,13 +337,19 @@ def sync_dp_tags():  # tags dos sensores
 if __name__ == "__main__":
     print("Iniciando sincronização...\n")
     logger.info("Iniciando sincronização...")
+    loader = JsonDataLoader("./data.json")
+    collected_data = loader.load()
     sync_gateways()
     auth_ScadaLTS()
-    sync_eqp_modbus()
+    sync_eqp_modbus(df=collected_data.copy())
     # sync_eqp_dnp3() # TODO: implementar sincronização de equipamentos dnp3
-    sync_eqp_tags()  # TODO: implementar tags de equipamentos dnp3
-    sync_dp_modbus()
-    sync_dp_tags()  # TODO: implementar tags de equipamentos dnp3
+    sync_eqp_tags(
+        df=collected_data.copy()
+    )  # TODO: implementar tags de equipamentos dnp3
+    sync_dp_modbus(df=collected_data.copy())
+    sync_dp_tags(
+        df=collected_data.copy()
+    )  # TODO: implementar tags de equipamentos dnp3
     # Adicionar outras sincronizações aqui
     logger.info("Sincronização concluída!")
     print("\nSincronização concluída!\n")

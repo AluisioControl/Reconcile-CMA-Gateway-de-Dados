@@ -8,9 +8,11 @@ from app.reconcile2.core.db_connection import DatabaseConnection
 from app.reconcile2.scadalts.mutations import (
     DATASOURCE_DNP3_FIELDS,
     DATASOURCE_MODBUS_FIELDS,
-    send_to_scada
+    send_to_scada,
 )
 from app.scadalts import (
+    delete_datapoint,
+    delete_datasource,
     import_datasource_dnp3,
     import_datasource_modbus,
 )
@@ -50,6 +52,7 @@ class EquipmentDataSynchronizer(BaseDataSynchronizer):
         Returns:
             DataFrame processado e filtrado
         """
+
         # Remover duplicatas pelo campo único
         df = df.drop_duplicates(subset=[self.unique_key])
 
@@ -74,7 +77,10 @@ class EquipmentDataSynchronizer(BaseDataSynchronizer):
             df: DataFrame com os dados a sincronizar
             db: Conexão com o banco de dados
         """
-        processed_df = self.preprocess_data(df)
+        if df.empty:
+            processed_df = self.preprocess_data(df)
+        else:
+            processed_df = df
         super().synchronize(processed_df, db)
 
     def _apply_changes(
@@ -82,11 +88,9 @@ class EquipmentDataSynchronizer(BaseDataSynchronizer):
     ):
         """Aplica as alterações ao banco de dados"""
         if changes["remove"]:
-            records = self._get_record_by_ids(changes["remove"], db)
-            records = records.copy()  # evitar problemas de referência
-            records["enabled"] = False
-            self._sync_datapoint_scada(df=records)
             self._remove_records(changes["remove"], db)
+            for id in changes["remove"]:
+                delete_datasource(ds_id=id)
 
         if not changes["update"].empty:
             self._update_records(changes["update"], db)
@@ -108,7 +112,9 @@ class EquipmentDataSynchronizer(BaseDataSynchronizer):
         else:
             raise ValueError(f"Tabela não suportada: {self.table_name}")
         send_to_scada(df=df, import_function=import_function)
-        logger.info(f"Enviados {len(df)} registros para o ScadaLTS, usando {import_function.__name__}.")
+        logger.info(
+            f"Enviados {len(df)} registros para o ScadaLTS, usando {import_function.__name__}."
+        )
 
 
 class ModbusEquipmentSynchronizer(EquipmentDataSynchronizer):
