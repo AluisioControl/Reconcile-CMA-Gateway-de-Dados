@@ -212,9 +212,14 @@ def sync_dp_modbus(df: pd.DataFrame):
 def sync_eqp_modbus(df: pd.DataFrame):
     logger.info("Sincronizando dados de equipamentos Modbus...")
     # loader = JsonDataLoader("./data.json")
+    gt = gateway_translate.copy()
+    for index, row in enumerate(gt):
+        if "host" in row:
+            gt.pop(index)
+    matrix_translate = gt + hardware_translate + sensores_modbus_translate
     translator = DataTranslator(
         map_fields(
-            gateway_translate + hardware_translate + sensores_modbus_translate,
+            matrix_translate,
             "Lógica de montagem",
             "Banco Middlware",
         )
