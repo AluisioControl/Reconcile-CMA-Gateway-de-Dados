@@ -120,19 +120,18 @@ async def main():
         host=configs.host, auth_token=await configs.auth_token
     )
     logger.info(f"gateway disponíveis: {", ".join([gw["name"] for gw in gateways])}")
+    if not gateways:
+        print(f"\033[91m >>> Nenhum gateway disponível <<< \x1b[0m")
     # get gateway by name
-    gateways = [
+    gateways_founds = [
         gateway for gateway in gateways if gateway["name"] == configs.gateway_name
     ]
-    if not gateways:
+    if not gateways_founds:
         logger.error(f"Gateway {configs.gateway_name} não encontrado")
-        disponiveis = ', '.join([gw['name'] for gw in gateways])
-        if not disponiveis:
-            print(f"\033[91m >>> Nenhum gateway disponível <<< \x1b[0m")
-        else:
-            print(f"\033[93m >>> Gateways disponíveis: {', '.join([gw['name'] for gw in gateways])} <<< \x1b[0m")
+        print(f"\033[91m >>> Gateway {configs.gateway_name} não encontrado <<< \x1b[0m")
+        print(f"\033[93m >>> Gateways disponíveis: {', '.join([gw['name'] for gw in gateways])} <<< \x1b[0m")
         raise ValueError(f"Gateway {configs.gateway_name} não encontrado")
-    for gateway in gateways:
+    for gateway in gateways_founds:
         gateway_id = gateway["id"]
         print(f"gateway name: {gateway["name"]}")
         logger.info(f"gateway name: {gateway["name"]}")

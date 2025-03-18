@@ -40,7 +40,8 @@ async def fetch_with_retry(
                     **kwargs,
                 ) as response:
                     if response.status == 200:
-                        return await response.json()
+                        data = await response.json()
+                        return data
                     if response.status == 401:
                         from app.settings import configs
 
