@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import sys
 import sqlite3
 from asyncio import Semaphore
 
@@ -125,6 +126,11 @@ async def main():
     ]
     if not gateways:
         logger.error(f"Gateway {configs.gateway_name} não encontrado")
+        disponiveis = ', '.join([gw['name'] for gw in gateways])
+        if not disponiveis:
+            print(f"\033[91m >>> Nenhum gateway disponível <<< \x1b[0m")
+        else:
+            print(f"\033[93m >>> Gateways disponíveis: {', '.join([gw['name'] for gw in gateways])} <<< \x1b[0m")
         raise ValueError(f"Gateway {configs.gateway_name} não encontrado")
     for gateway in gateways:
         gateway_id = gateway["id"]

@@ -77,6 +77,9 @@ def parse_hardware_data(data_hardware):
         "name_cma": data_hardware.get("cmaGateway", {}).get("name", None),
         "ip_cma": data_hardware.get("cmaGateway", {}).get("ip", None),
         "active_cma": data_hardware.get("cmaGateway", {}).get("active", None),
+        # New fields
+        "type_hdw": data_hardware.get("type", {}),
+        "model_hdw": data_hardware.get("model", {}),
     }
     return parsed_data
 

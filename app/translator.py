@@ -49,7 +49,7 @@ gateway_translate = [
     ["Name", "name", "name_gtw", "xid_gateway", "xid_gateway", "", "ID"],
     ["IP", "ip", "ip_gtw", "host", "host", "", "IP"],
     ["Active", "active", "active_gtw", "status", "status", "", "Status"],
-    ["Substation ID", "id", "id_sub", "", "", "", ""],
+    ["Substation ID", "id", "id_sub", "id_sub", "id_sub", "", "id_sub"],
     [
         "Substation Name",
         "name",
@@ -89,6 +89,8 @@ hardware_translate = [
     ["CMA Gateway Name", "name", "name_cma", "", "", "", ""],
     ["CMA Gateway IP", "ip", "ip_cma", "", "", "", ""],
     ["CMA Gateway Active", "active", "active_cma", "", "", "", ""],
+    ["type", "type", "type_hdw", "type", "type", "type"],
+    ["model", "model", "model_hdw", "model", "model", "model"],
 ]
 if len(hardware_translate[0]) != len(bases_names):
     raise ValueError("Número de colunas inválido para hardware_translate")
@@ -177,6 +179,8 @@ sensores_modbus_translate = [
     ["CMA Gateway Name", "name", "", "", "", "", ""],
     ["CMA Gateway IP", "ip", "", "", "", "", ""],
     ["CMA Gateway Active", "active", "", "", "", "", ""],
+    ["Manufacturer ID", "Manufacturer ID", "id_man", "id_man", "id_man", "", "id_man"],
+    ["Hardware ID", "id", "id_hw_sen", "id_hw_sen", "id_hw_sen", "", "id_hw_sen"]
 ]
 if len(sensores_modbus_translate[0]) != len(bases_names):
     raise ValueError("Número de colunas inválido para sensores_modbus_translate")
@@ -318,18 +322,19 @@ registradores_modbus_translate = [
         "",
         "",
     ],
-    ["Register Type ID", "id", "id_reg_reg_mod", "", "", "", ""],
+    ["Register Type ID", "id", "id_reg_reg_mod", "id_reg_reg_mod", "id_reg_reg_mod", "", "id_reg_reg_mod"],
     ["Register Type Name", "name", "name_reg_reg_mod", "tipo", "tipo", "", "Tipo"],
+    ["Register Type Name", "name", "name_reg_reg_mod", "classificacao", "classificacao", "", "classificacao"],
     ["Register Type Active", "active", "active_reg_reg_mod", "", "", "", ""],
-    ["Sensor Type ID", "id", "id_sen_reg_mod", "", "", "", ""],
+    ["Sensor Type ID", "id", "id_sen_reg_mod", "id_sen_reg_mod", "id_sen_reg_mod", "", "id_sen_reg_mod"],
     [
         "Sensor Type Name",
         "name",
         "name_sen_reg_mod",
-        "classificacao",
-        "classificacao",
+        "tipo",
+        "tipo",
         "",
-        "Classificacao",
+        "tipo",
     ],
     ["Sensor Type Active", "active", "active_sen_reg_mod", "", "", "", ""],
 ]
@@ -422,7 +427,7 @@ sensores_dnp3_translate = [
         "enabled",
         "Status",
     ],
-    ["Manufacturer ID", "id", "id_man_reg_dnp3", "", "", "", ""],
+    ["Manufacturer ID", "id", "id_man_reg_dnp3", "id_man_reg_dnp3", "id_man_reg_dnp3", "", "id_man_reg_dnp3"],
     [
         "Manufacturer Name",
         "name",
@@ -433,7 +438,7 @@ sensores_dnp3_translate = [
         "Fabricante",
     ],
     ["Manufacturer Active", "active", "active_man_reg_mod", "", "", "", ""],
-    ["Hardware ID", "id", "sensorDnpId_reg_dnp3", "", "", "", ""],
+    ["Hardware ID", "id", "sensorDnpId_reg_dnp3", "sensorDnpId_reg_dnp3", "", "", "sensorDnpId_reg_dnp3"],
     ["Hardware Name", "name", "name_dnp_reg_dnp3", "", "", "", ""],
     ["SAP ID", "sapId", "sensorTypeId_reg_dnp3", "", "", "", ""],
     ["Hardware Active", "active", "active_sen_reg_dnp3", "", "", "", ""],
@@ -510,10 +515,11 @@ registradores_dnp3_translate = [
     ["Manufacturer ID", "id", "", "", "", "", ""],
     ["Manufacturer Name", "name", "", "", "", "", ""],
     ["Manufacturer Active", "active", "", "", "", "", ""],
-    ["Register Type ID", "id", "id_reg_reg_dnp3", "", "", "", ""],
-    ["Register Type Name", "name", "name_reg_reg_dnp3", "tipo", "tipo", "", "Tipo"],
+    ["Register Type ID", "id", "id_reg_reg_dnp3", "id_reg_reg_dnp3", "id_reg_reg_dnp3", "id_reg_reg_dnp3", "id_reg_reg_dnp3"],
+    ["Register Type Name", "name", "name_reg_reg_dnp3", "classificacao", "classificacao", "", "classificacao"],
+    ["Sensor Type Name", "name", "name_sen_reg_dnp3", "tipo", "tipo", "", "Tipo"],
     ["Register Type Active", "active", "active_reg_reg_dnp_dnp3", "", "", "", ""],
-    ["Sensor Type ID", "id", "id_sen_reg_dnp3", "", "", "", ""],
+    ["Sensor Type ID", "id", "id_sen_reg_dnp3", "id_sen_reg_dnp3", "id_sen_reg_dnp3", "", "id_sen_reg_dnp3"],
     [
         "Sensor Type Name",
         "name",

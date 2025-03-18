@@ -307,6 +307,10 @@ def parse_register_modbus_data(data_register_modbus):
             "active", None
         ),
         "reg_mod_tags": json.dumps(data_register_modbus.get("tags", {})),
+        # New fields
+        "phase_reg_mod": data_register_modbus.get("phase", {}),
+        "circuitBreakerManeuverType_reg_mod": json.dumps(data_register_modbus).get("circuitBreakerManeuverType", {}),
+        "bushingSide_reg_mod": json.dumps(data_register_modbus).get("bushingSide", {}),
     }
     return parsed_data
 
