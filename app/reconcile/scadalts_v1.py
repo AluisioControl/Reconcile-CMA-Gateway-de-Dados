@@ -8,7 +8,7 @@ from app.scadalts import (
     import_datasource_modbus,
     send_data_to_scada,
 )
-from app.translator import all_translates, map_fields, translate
+from app.translator import all_translates, map_fields
 
 """
 dp = datapoint = registers

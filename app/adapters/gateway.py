@@ -20,9 +20,7 @@ class GatewayAdapter:
             "id_sub": data_gateway.get("substation", {}).get("id", None),
             "name_sub": data_gateway.get("substation", {}).get("name", None),
             "active_sub": data_gateway.get("substation", {}).get("active", None),
-            "sapAbbreviation_sub": data_gateway.get("substation", {}).get(
-                "sapAbbreviation", None
-            ),
+            "sapAbbreviation_sub": data_gateway.get("substation", {}).get("sapAbbreviation", None),
             "createdAt_gtw": data_gateway.get("createdAt", None),
             "updatedAt_gtw": data_gateway.get("updatedAt", None),
             "userCreatedId_gtw": data_gateway.get("userCreatedId", None),

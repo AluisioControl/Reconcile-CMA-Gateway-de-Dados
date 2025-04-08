@@ -1,5 +1,4 @@
 import json
-from time import sleep
 
 import pandas as pd
 
@@ -134,9 +133,7 @@ def main():
     # Processar e importar datasources (sensores modbus)
     if "id_sen" in df_data_all.columns:
         print("\nProcessando datasources modbus...")
-        df_datasources = process_data(
-            df_data_all, mapping, DATASOURCE_MODBUS_FIELDS, unique_key="id_sen"
-        )
+        df_datasources = process_data(df_data_all, mapping, DATASOURCE_MODBUS_FIELDS, unique_key="id_sen")
         print("\nEnviando datasources modbus para o ScadaLTS...")
         send_to_scada(df_datasources, import_datasource_modbus)
 
@@ -145,10 +142,10 @@ def main():
     print(df_data_all.columns)
     if "id_reg_mod" in df_data_all.columns:
         print("\nProcessando datapoints modbus...")
-        df_datapoints = process_data(
-            df_data_all, mapping, DATAPOINT_MODBUS_FIELDS, filter_column="id_reg_mod"
-        )
+        df_datapoints = process_data(df_data_all, mapping, DATAPOINT_MODBUS_FIELDS, filter_column="id_reg_mod")
         print("\nEnviando datapoint modbus para o ScadaLTS...")
+        # colocar o valor do host na coluna xid_equip
+        df_datapoints["xid_equip"] = df_datapoints["host"]
         send_to_scada(df_datapoints, import_datapoint_modbus)
     else:
         print("Não há dados de datapoints modbus.")
@@ -156,9 +153,7 @@ def main():
     # Processar e importar datasources (sensores dnp3)
     if "id_sen_dnp3" in df_data_all.columns:
         print("\nProcessando datasources dnp3...")
-        df_datasources = process_data(
-            df_data_all, mapping, DATASOURCE_DNP3_FIELDS, unique_key="id_sen_dnp3"
-        )
+        df_datasources = process_data(df_data_all, mapping, DATASOURCE_DNP3_FIELDS, unique_key="id_sen_dnp3")
         print("n\Enviando datasource dnp3 para o ScadaLTS...")
         send_to_scada(df_datasources, import_datasource_dnp3)
     else:
@@ -167,10 +162,10 @@ def main():
     # Processar e importar datapoints (registradores dnp3)
     if "id_reg_dnp3" in df_data_all.columns:
         print("\nProcessando datapoints dnp3...")
-        df_datapoints = process_data(
-            df_data_all, mapping, DATAPOINT_DNP3_FIELDS, filter_column="id_reg_dnp3"
-        )
+        df_datapoints = process_data(df_data_all, mapping, DATAPOINT_DNP3_FIELDS, filter_column="id_reg_dnp3")
         print("n\Enviando datapoint dnp3 para o ScadaLTS...")
+        # colocar o valor do host na coluna xid_equip
+        df_datapoints["xid_equip"] = df_datapoints["host"]
         send_to_scada(df_datapoints, import_datapoint_dnp3)
     else:
         print("Não há dados de datapoints dnp3.")

@@ -1,11 +1,24 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Set
+from app.settings import configs
 
 import pandas as pd
 
 from app.logger import logger
+from app.scadalts import (
+    delete_hard_datapoint,
+    delete_hard_datasource,
+    send_data_to_scada,
+    import_datasource_modbus,
+    import_datapoint_modbus,
+)
 
 from .db_connection import DatabaseConnection
+
+"""
+dp = datapoint = registers
+eqp = equipment = datasource = sensores
+"""
 
 
 class DataSynchronizer(ABC):
@@ -19,9 +32,66 @@ class DataSynchronizer(ABC):
 class BaseDataSynchronizer(DataSynchronizer):
     """Implementação base para sincronização"""
 
+    def _insert_record_scada_lts(self, *args, **kwargs):
+        # orverriden in __init__
+        raise NotImplementedError("Método não implementado")
+
+    def _sacada_lts_delete_hard(self, *args, **kwargs):
+        # orverriden in __init__
+        raise NotImplementedError("Método não implementado")
+
+    def _remove_records_scada_lts(self, *args, **kwargs):
+        # orverriden in __init__
+        raise NotImplementedError("Método não implement")
+
     def __init__(self, table_name: str, primary_key: str):
         self.table_name = table_name
         self.primary_key = primary_key
+        # type deletion for SCADA-LTS
+        if configs.SCADALTS_DELETE_TYPE == "hard":
+            self._remove_records_scada_lts = self._remove_records_scada_lts_hard
+        else:
+            self._remove_records_scada_lts = self._remove_records_scada_lts_soft
+        # functions for SCADA-LTS by table
+        if self.table_name == "DP_MODBUS_IP":
+            self._insert_record_scada_lts = import_datapoint_modbus
+            self._insert_record_scada_lts_params = [
+                "xid_sensor",
+                "range",
+                "modbusDataType",
+                "additive",
+                "bit",
+                "multiplier",
+                "offset",
+                "slaveId",
+                "xid_equip",
+                "enabled",
+                "nome",
+            ]
+            self._sacada_lts_delete_hard = delete_hard_datapoint
+            self._sacada_lts_delete_hard_params = {
+                "ds_id": "xid_sensor",
+                "dp_id": "xid_equip",
+            }
+        elif self.table_name == "EQ_MODBUS_IP":
+            self._insert_record_scada_lts = import_datasource_modbus
+            self._insert_record_scada_lts_params = [
+                "xid_equip",
+                "updatePeriodType",
+                "enabled",
+                "host",
+                "maxReadBitCount",
+                "maxReadRegisterCount",
+                "maxWriteRegisterCount",
+                "port",
+                "retries",
+                "timeout",
+                "updatePeriods",
+            ]
+            self._sacada_lts_delete_hard = delete_hard_datasource
+            self._sacada_lts_delete_hard_params = {
+                "ds_id": "xid_sensor",
+            }
 
     def synchronize(self, df: pd.DataFrame, db: DatabaseConnection):
         existing_data = self._get_existing_data(db)
@@ -33,9 +103,7 @@ class BaseDataSynchronizer(DataSynchronizer):
     def _get_existing_data(self, db: DatabaseConnection) -> pd.DataFrame:
         return db.fetch_dataframe(f"SELECT * FROM {self.table_name}")
 
-    def _analyze_changes(
-        self, df: pd.DataFrame, existing_data: pd.DataFrame
-    ) -> Dict[str, any]:
+    def _analyze_changes(self, df: pd.DataFrame, existing_data: pd.DataFrame) -> Dict[str, any]:
         """
         Analisa as diferenças entre os DataFrames e retorna um dicionário com as alterações.
 
@@ -51,9 +119,7 @@ class BaseDataSynchronizer(DataSynchronizer):
             return {
                 "new": df,  # df vazio não há novos registros
                 "update": df,  # df vazio não há registros a atualizar
-                "remove": set(
-                    existing_data[self.primary_key]
-                ),  # remover todos os registros existentes
+                "remove": set(existing_data[self.primary_key]),  # remover todos os registros existentes
                 "total": len(df),  # total de registros de entrada
             }
         # verificar se o df tem totas as colunas do existing_data
@@ -73,44 +139,28 @@ class BaseDataSynchronizer(DataSynchronizer):
 
         # IDs a remover (registros que não estão no DataFrame são desnecessários)
         df_ids = set(df[self.primary_key])  # conjunto de IDs do DataFrame
-        db_ids = set(
-            existing_data[self.primary_key]
-        )  # conjunto de IDs do banco de dados
-        records_to_remove = (
-            db_ids - df_ids
-        )  # IDs a remover são os IDs do banco de dados que não estão no DataFrame
+        db_ids = set(existing_data[self.primary_key])  # conjunto de IDs do banco de dados
+        records_to_remove = db_ids - df_ids  # IDs a remover são os IDs do banco de dados que não estão no DataFrame
 
         # Regra de negócio: só atualizar registros que possuem diferenças
         if not common_records.empty:
             # Normalizar os tipos de dados entre os DataFrames novos e existentes (se necessário)
             if list(common_records.dtypes) != list(existing_data.dtypes):
                 for column in common_records.columns:  # analisar cada coluna
-                    if (
-                        common_records[column].dtype != existing_data[column].dtype
-                    ):  # se o tipo de dado for diferente
+                    if common_records[column].dtype != existing_data[column].dtype:  # se o tipo de dado for diferente
                         # converter o tipo de dado da coluna do DataFrame comum para o tipo de dado do DataFrame existente
                         try:
-                            existing_data[column] = existing_data[column].astype(
-                                common_records[column].dtype
-                            )
-                            logger.warning(
-                                f"{column} convertido para {common_records[column].dtype}"
-                            )
+                            existing_data[column] = existing_data[column].astype(common_records[column].dtype)
+                            logger.warning(f"{column} convertido para {common_records[column].dtype}")
                         except ValueError as e:
-                            logger.error(
-                                f"Erro ao converter {column} para {existing_data[column].dtype}: {e}"
-                            )
+                            logger.error(f"Erro ao converter {column} para {existing_data[column].dtype}: {e}")
                             # converter o tipo de ambos os DataFrames para o tipo para string
                             common_records[column] = common_records[column].astype(str)
                             existing_data[column] = existing_data[column].astype(str)
 
             # regra de negócio: só atualizar registros que possuem diferenças
-            merged_df = existing_data.merge(
-                common_records, indicator=True, how="outer"
-            )  # merge dos DataFrames
-            changed_rows_df = merged_df[
-                merged_df["_merge"] == "right_only"
-            ]  # registros que possuem diferenças
+            merged_df = existing_data.merge(common_records, indicator=True, how="outer")  # merge dos DataFrames
+            changed_rows_df = merged_df[merged_df["_merge"] == "right_only"]  # registros que possuem diferenças
             diff_df = changed_rows_df.drop("_merge", axis=1)  # remover a coluna _merge
             common_records = diff_df  # atualizar common_records para os registros que possuem diferenças
 
@@ -133,9 +183,7 @@ class BaseDataSynchronizer(DataSynchronizer):
         print(mgs)
 
     @abstractmethod
-    def _apply_changes(
-        self, changes: Dict[str, any], df: pd.DataFrame, db: DatabaseConnection
-    ):
+    def _apply_changes(self, changes: Dict[str, any], df: pd.DataFrame, db: DatabaseConnection):
         """
         Aplica as alterações identificadas ao banco de dados.
 
@@ -147,35 +195,56 @@ class BaseDataSynchronizer(DataSynchronizer):
         """
         # 1. Remover registros que não estão mais no DataFrame
         if changes["remove"]:
+            self._remove_records_scada_lts(changes["remove"])
             self._remove_records(changes["remove"], db)
-            logger.info(
-                f"Removidos {len(changes['remove'])} registros da tabela {self.table_name}."
-            )
+            logger.info(f"Removidos {len(changes['remove'])} registros da tabela {self.table_name}.")
         else:
             logger.info(f"Nenhum registro removido da tabela {self.table_name}.")
 
         # 2. Atualizar registros existentes
         if not changes["update"].empty:
             self._update_records(changes["update"], db)
-            logger.info(
-                f"Atualizados {len(changes['update'])} registros da tabela {self.table_name}."
-            )
+            logger.info(f"Atualizados {len(changes['update'])} registros da tabela {self.table_name}.")
         else:
             logger.info(f"Nenhum registro atualizado da tabela {self.table_name}.")
 
         # 3. Inserir novos registros
         if not changes["new"].empty:
             self._insert_records(changes["new"], db)
-            logger.info(
-                f"Inseridos {len(changes['new'])} novos registros na tabela {self.table_name}."
-            )
+            logger.info(f"Inseridos {len(changes['new'])} novos registros na tabela {self.table_name}.")
         else:
             logger.info(f"Nenhum novo registro inserido na tabela {self.table_name}.")
 
     def _remove_records(self, record_ids: set, db: DatabaseConnection):
         """Remove registros do banco de dados"""
-        query = f"DELETE FROM {self.table_name} WHERE {self.primary_key} IN (\"{'","'.join(map(str, record_ids))}\")"
+        query = f'DELETE FROM {self.table_name} WHERE {self.primary_key} IN ("{'","'.join(map(str, record_ids))}")'
         db.execute(query)
+
+    def _remove_records_scada_lts_hard(self, record_ids: set, db: DatabaseConnection):
+        logger.info(f"Removendo registros do SCADA-LTS: {record_ids}")
+        records = self._get_record_by_ids(record_ids, db=db)
+        if records.empty:
+            raise ValueError("Nenhum registro para remover encontrado")
+        for _, record in records.iterrows():
+            params = {}
+            for k, v in self._sacada_lts_delete_hard_params:
+                params.update({v: record[k]})
+            self._sacada_lts_delete_hard(**params)
+
+    def _remove_records_scada_lts_soft(self, record_ids: set, db: DatabaseConnection):
+        logger.info(f"Desabilitando registros do SCADA-LTS: {record_ids}")
+        records = self._get_record_by_ids(ids=record_ids, db=db)
+        if records.empty:
+            raise ValueError("Nenhum registro para remover encontrado")
+        for _, record in records.iterrows():
+            data = {}
+            record = record.to_dict()
+            for key in record:
+                if key in self._insert_record_scada_lts_params:
+                    data.update({key: record[key]})
+            data.update({"enabled": False})
+            raw = self._insert_record_scada_lts(**data)
+            send_data_to_scada(raw)
 
     def _update_records(self, records: pd.DataFrame, db: DatabaseConnection):
         """Atualiza registros existentes no banco de dados"""
@@ -183,10 +252,9 @@ class BaseDataSynchronizer(DataSynchronizer):
 
     def _insert_records(self, records: pd.DataFrame, db: DatabaseConnection):
         """Insere novos registros no banco de dados"""
-        print("Inserindo registros no banco de dados")
         records.to_sql(self.table_name, db.connection, if_exists="append", index=False)
 
     def _get_record_by_ids(self, ids: list, db: DatabaseConnection) -> Set[str]:
         """Obtém os registros dos IDs fornecidos"""
-        query = f"SELECT * FROM {self.table_name} WHERE {self.primary_key} IN (\"{'","'.join(map(str, ids))}\")"
+        query = f'SELECT * FROM {self.table_name} WHERE {self.primary_key} IN ("{'","'.join(map(str, ids))}")'
         return db.fetch_dataframe(query)

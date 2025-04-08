@@ -1,7 +1,5 @@
 import asyncio
 import json
-import os
-import sys
 import sqlite3
 from asyncio import Semaphore
 
@@ -59,14 +57,9 @@ async def collect_registers_modbus(sensor_modbus_id):
         sensor_modbus_id=sensor_modbus_id,
         size=configs.MAX_PAGE_SIZE,
     )
-    print(
-        f"   - Coletando {len(registers_data["content"])} registros modbus sensor id: {sensor_modbus_id}..."
-    )
+    print(f"   - Coletando {len(registers_data['content'])} registros modbus sensor id: {sensor_modbus_id}...")
     # processar os registros em paralelo
-    tasks = [
-        fetch_and_parse_register_modbus(register_data)
-        for register_data in registers_data["content"]
-    ]
+    tasks = [fetch_and_parse_register_modbus(register_data) for register_data in registers_data["content"]]
     logger.info(f"   - Coletando {len(tasks)} registros")
     registers = await asyncio.gather(*tasks)
     return registers
@@ -90,14 +83,9 @@ async def collect_registers_dnp(sensor_dnp_id):
         sensor_dnp_id=sensor_dnp_id,
         size=configs.MAX_PAGE_SIZE,
     )
-    print(
-        f"   - Coletando {len(registers_data["content"])} registros dnp3 sensor id: {sensor_dnp_id}..."
-    )
+    print(f"   - Coletando {len(registers_data['content'])} registros dnp3 sensor id: {sensor_dnp_id}...")
     # processar os registros em paralelo
-    tasks = [
-        fetch_and_parse_register_dnp(register_data)
-        for register_data in registers_data["content"]
-    ]
+    tasks = [fetch_and_parse_register_dnp(register_data) for register_data in registers_data["content"]]
     logger.info("    - Coletando ", len(tasks), " registros")
     registers = await asyncio.gather(*tasks)
     return registers
@@ -113,19 +101,15 @@ async def main():
     list_registers_dnp3 = []
 
     all_flat_data = []
-    hardwares_parsed = []
-    hardwares_combined = []
+    # hardwares_parsed = []
+    # hardwares_combined = []
     sensors_parsed = []
-    gateways = await fetch_all_gateways(
-        host=configs.host, auth_token=await configs.auth_token
-    )
-    logger.info(f"gateway disponíveis: {", ".join([gw["name"] for gw in gateways])}")
+    gateways = await fetch_all_gateways(host=configs.host, auth_token=await configs.auth_token)
+    logger.info(f"gateway disponíveis: {', '.join([gw['name'] for gw in gateways])}")
     if not gateways:
-        print(f"\033[91m >>> Nenhum gateway disponível <<< \x1b[0m")
+        print("\033[91m >>> Nenhum gateway disponível <<< \x1b[0m")
     # get gateway by name
-    gateways_founds = [
-        gateway for gateway in gateways if gateway["name"] == configs.gateway_name
-    ]
+    gateways_founds = [gateway for gateway in gateways if gateway["name"] == configs.gateway_name]
     if not gateways_founds:
         logger.error(f"Gateway {configs.gateway_name} não encontrado")
         print(f"\033[91m >>> Gateway {configs.gateway_name} não encontrado <<< \x1b[0m")
@@ -133,8 +117,8 @@ async def main():
         raise ValueError(f"Gateway {configs.gateway_name} não encontrado")
     for gateway in gateways_founds:
         gateway_id = gateway["id"]
-        print(f"gateway name: {gateway["name"]}")
-        logger.info(f"gateway name: {gateway["name"]}")
+        print(f"gateway name: {gateway['name']}")
+        logger.info(f"gateway name: {gateway['name']}")
         gateway_data = await fetch_gateway_by_id(
             host=configs.host,
             auth_token=await configs.auth_token,
@@ -151,7 +135,7 @@ async def main():
         )
         for hardware in hardwares:
             hardware_id = hardware["id"]
-            logger.info(f"  nome hardware {hardware["name"]}")
+            logger.info(f"  nome hardware {hardware['name']}")
             hardware_data = await fetch_hardware_by_id(
                 host=configs.host,
                 auth_token=await configs.auth_token,
@@ -173,11 +157,9 @@ async def main():
                 logger.warning(f"O hardware id: {hardware_id} não tem modbus dnp3")
             else:
                 print(f"Coleando sensores {len(sensors)} modbus...")
-                for sensor in sensors[
-                    "content"
-                ]:  # informação de sensores modbus paginada
+                for sensor in sensors["content"]:  # informação de sensores modbus paginada
                     sensor_id = sensor["id"]
-                    logger.info(f"   Nome sensor modbus: {sensor["name"]}")
+                    logger.info(f"   Nome sensor modbus: {sensor['name']}")
                     sensor_data = await fetch_sensor_modbus_by_id(
                         host=configs.host,
                         auth_token=await configs.auth_token,
@@ -189,9 +171,7 @@ async def main():
                     # coletar os registros de cada sensor
                     registers_modbus = await collect_registers_modbus(sensor_id)
                     list_registers_modbus += registers_modbus
-                    sensor_combine_registers_modbus += combine_primary_with_secondary(
-                        sensor_parsed, registers_modbus
-                    )
+                    sensor_combine_registers_modbus += combine_primary_with_secondary(sensor_parsed, registers_modbus)
                     logger.info(
                         f"   +sub total resistros por sensor: {len(sensor_combine_registers_modbus)}",
                     )
@@ -201,9 +181,7 @@ async def main():
             hardware_combine_sensors_modbus += combine_primary_with_secondary(
                 hardware_parsed, sensor_combine_registers_modbus
             )
-            logger.info(
-                f"  +subtotal de restristros por hardware: {len(hardware_combine_sensors_modbus)}"
-            )
+            logger.info(f"  +subtotal de restristros por hardware: {len(hardware_combine_sensors_modbus)}")
             # hardwares_combined += hardware_combine_sensors_modbus
 
             # consultar todos os sensor DNP associado a cada hardware
@@ -219,9 +197,7 @@ async def main():
                 logger.warning(f"O hardware id: {hardware_id} não tem sensores dnp3")
             else:
                 print(f"Coleando sensores {len(sensors_dnp)} dnp3...")
-                for sensor_dnp in sensors_dnp[
-                    "content"
-                ]:  # informação de sensores modbus paginada
+                for sensor_dnp in sensors_dnp["content"]:  # informação de sensores modbus paginada
                     sensor_dnp_id = sensor_dnp["id"]
                     logger.info("  sensor_dnp_id", sensor_dnp_id)
                     sensor_dnp_data = await fetch_sensor_dnp_by_id(
@@ -236,35 +212,25 @@ async def main():
                     # coletar os registros de cada sensor
                     registers_dnp3 = await collect_registers_dnp(sensor_id)
                     list_registers_dnp3 += registers_dnp3
-                    sensor_combine_registers_dnp += combine_primary_with_secondary(
-                        sensor_parsed, registers_dnp3
-                    )
+                    sensor_combine_registers_dnp += combine_primary_with_secondary(sensor_parsed, registers_dnp3)
                     logger.info(
                         "  +sub total resistros por sensor:",
                         len(sensor_combine_registers_dnp),
                     )
                     if configs.DEBUG:
                         break
-                    logger.info(
-                        "total de resgistro por sensor:", len(sensors_dnp_parsed)
-                    )
+                    logger.info("total de resgistro por sensor:", len(sensors_dnp_parsed))
             # combinar o resultado de hardware com o resultado de sensores
             hardware_combine_sensors_dnp += combine_primary_with_secondary(
                 hardware_parsed, sensor_combine_registers_dnp
             )
-            logger.info(
-                f"  +subtotal de restristros dnp por hardware: {len(hardware_combine_sensors_dnp)}"
-            )
+            logger.info(f"  +subtotal de restristros dnp por hardware: {len(hardware_combine_sensors_dnp)}")
             if configs.DEBUG:
                 break
         logger.info(f"total de sensores modbus: {len(hardware_combine_sensors_modbus)}")
         logger.info(f"total de sensores dnp3: {len(hardware_combine_sensors_dnp)}")
-        all_flat_data += combine_primary_with_secondary(
-            gateway_parsed, hardware_combine_sensors_modbus
-        )
-        all_flat_data += combine_primary_with_secondary(
-            gateway_parsed, hardware_combine_sensors_dnp
-        )
+        all_flat_data += combine_primary_with_secondary(gateway_parsed, hardware_combine_sensors_modbus)
+        all_flat_data += combine_primary_with_secondary(gateway_parsed, hardware_combine_sensors_dnp)
         logger.info(f"total acumulado por hardware: {len(all_flat_data)}")
     logger.info(f"total de registros: {len(all_flat_data)}")
     # Salvar os dados em um arquivo JSON

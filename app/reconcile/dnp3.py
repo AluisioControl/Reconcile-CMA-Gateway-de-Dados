@@ -17,9 +17,7 @@ df = pd.DataFrame(data)
 # traduzir os campos do json para o banco de dados
 base_in = "Lógica de montagem"
 base_out = "Gateway de Dados"
-mapping = map_fields(
-    base_translate=gateway_translate, base_in=base_in, base_out=base_out
-)
+mapping = map_fields(base_translate=gateway_translate, base_in=base_in, base_out=base_out)
 
 # print o mapping: de -> para
 print(f"\nTradução\n{base_in} para {base_out}")
@@ -57,9 +55,7 @@ df_sqlite = pd.read_sql_query("SELECT * FROM CMA_GD", conn)
 primary_key = "xid_gateway"  # Definir a chave primária
 
 df_novos = df[~df[primary_key].isin(df_sqlite[primary_key])]  # Registros novos (INSERT)
-df_comuns = df[
-    df[primary_key].isin(df_sqlite[primary_key])
-]  # Registros existentes (UPDATE)
+df_comuns = df[df[primary_key].isin(df_sqlite[primary_key])]  # Registros existentes (UPDATE)
 ids_df = set(df[primary_key])  # Conjunto de PKs do DataFrame
 ids_sqlite = set(df_sqlite[primary_key])  # Conjunto de PKs do SQLite
 ids_remover = ids_sqlite - ids_df  # Registros a remover (DELETE)

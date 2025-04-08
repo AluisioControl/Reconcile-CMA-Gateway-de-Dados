@@ -46,12 +46,8 @@ async def fetch_with_retry(
                         from app.settings import configs
 
                         configs.relogin()
-                        raise Exception(
-                            "Falha na autenticação. Verifique o token de acesso."
-                        )
-                    raise Exception(
-                        f"Falha na requisição. Código de status: {response.status}"
-                    )
+                        raise Exception("Falha na autenticação. Verifique o token de acesso.")
+                    raise Exception(f"Falha na requisição. Código de status: {response.status}")
         except aiohttp.ClientConnectionError as e:
             print(f"Tentativa {attempt}: erro de conexão ({e}), tentando novamente...")
             if attempt == max_attempts:

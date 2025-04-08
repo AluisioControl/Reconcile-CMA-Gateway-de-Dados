@@ -1,6 +1,5 @@
 import json
 
-import aiohttp
 
 from app.utils.http_utils import fetch_with_retry
 
@@ -60,9 +59,7 @@ async def fetch_sensors_modbus(
     if gateway_name:
         params["gatewayName"] = gateway_name
     if active is not None:
-        params["active"] = str(
-            active
-        ).lower()  # API pode esperar "true" ou "false" como string
+        params["active"] = str(active).lower()  # API pode esperar "true" ou "false" como string
     if manufacturer_id:
         params["manufacturerId"] = manufacturer_id
     if hardware_id:
@@ -132,9 +129,7 @@ async def fetch_sensors_dnp(
     if gateway_name:
         params["gatewayName"] = gateway_name
     if active is not None:
-        params["active"] = str(
-            active
-        ).lower()  # API pode esperar "true" ou "false" como string
+        params["active"] = str(active).lower()  # API pode esperar "true" ou "false" como string
 
     url = f"{host}/sensors-dnp"
     headers = {"Authorization": f"Bearer {auth_token}"}
@@ -210,9 +205,7 @@ def parse_sensor_dnp_data(data_sensor_dnp3):
         "type_sen_dnp3": data_sensor_dnp3.get("type", None),
         "attempts_sen_dnp3": data_sensor_dnp3.get("attempts", None),
         "timeLimit_sen_dnp3": data_sensor_dnp3.get("timeLimit", None),
-        "actualizationPeriod_sen_dnp3": data_sensor_dnp3.get(
-            "actualizationPeriod", None
-        ),
+        "actualizationPeriod_sen_dnp3": data_sensor_dnp3.get("actualizationPeriod", None),
         "pollRbePeriod_sen_dnp3": data_sensor_dnp3.get("pollRbePeriod", None),
         "pollStaticPeriod_sen_dnp3": data_sensor_dnp3.get("pollStaticPeriod", None),
         "addressSource_sen_dnp3": data_sensor_dnp3.get("addressSource", None),
@@ -221,9 +214,7 @@ def parse_sensor_dnp_data(data_sensor_dnp3):
         # Manufacturer data
         "id_sen_dnp3_man": data_sensor_dnp3.get("manufacturer", {}).get("id", None),
         "name_sen_dnp3_man": data_sensor_dnp3.get("manufacturer", {}).get("name", None),
-        "active_sen_dnp3_man": data_sensor_dnp3.get("manufacturer", {}).get(
-            "active", None
-        ),
+        "active_sen_dnp3_man": data_sensor_dnp3.get("manufacturer", {}).get("active", None),
         # Hardware data
         "id_sen_dnp3_hw": data_sensor_dnp3.get("hardware", {}).get("id", None),
         "name_sen_dnp3_hw": data_sensor_dnp3.get("hardware", {}).get("name", None),

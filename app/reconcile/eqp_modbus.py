@@ -3,10 +3,9 @@ import sqlite3
 
 import pandas as pd
 
-from app.getters.hardware import parse_hardware_data
-from app.getters.sensors import parse_sensor_modbus_data
 from app.settings import configs
-from app.utils.data import combine_primary_with_secondary
+
+from app.translator import all_translates, map_fields
 
 # Load hardware data from JSON files
 with open("./data.json") as f:
@@ -22,8 +21,6 @@ print("len(df):", len(df))
 # filtar unicos pela coluna id_sen
 df = df.drop_duplicates(subset=["id_sen"])
 print("len(df):", len(df))
-
-from app.translator import all_translates, map_fields, translate
 
 mapping = map_fields(
     base_translate=all_translates,
@@ -108,16 +105,14 @@ df_sqlite = pd.read_sql_query(f"SELECT * FROM {db_table}", conn)
 primary_key = "xid_equip"  # Definir a chave primária
 
 df_novos = df[~df[primary_key].isin(df_sqlite[primary_key])]  # Registros novos (INSERT)
-df_comuns = df[
-    df[primary_key].isin(df_sqlite[primary_key])
-]  # Registros existentes (UPDATE)
+df_comuns = df[df[primary_key].isin(df_sqlite[primary_key])]  # Registros existentes (UPDATE)
 ids_df = set(df[primary_key])  # Conjunto de PKs do DataFrame
 ids_sqlite = set(df_sqlite[primary_key])  # Conjunto de PKs do SQLite
 ids_remover = ids_sqlite - ids_df  # Registros a remover (DELETE)
 
 # 3. Remover registros que não estão no DataFrame
 if ids_remover:
-    query = f"DELETE FROM {db_table} WHERE {primary_key} IN (\"{'","'.join(map(str, ids_remover))}\")"
+    query = f'DELETE FROM {db_table} WHERE {primary_key} IN ("{'","'.join(map(str, ids_remover))}")'
     print(f"\n\tquery: {query}")
     cursor.execute(query)
     print(f"\n\tRemovidos {len(ids_remover)} registros.")

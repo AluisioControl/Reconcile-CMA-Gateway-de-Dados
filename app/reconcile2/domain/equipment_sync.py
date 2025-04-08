@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import pandas as pd
 
@@ -11,12 +11,9 @@ from app.reconcile2.scadalts.mutations import (
     send_to_scada,
 )
 from app.scadalts import (
-    delete_datapoint,
-    delete_datasource,
     import_datasource_dnp3,
     import_datasource_modbus,
 )
-from app.utils.data import combine_primary_with_secondary
 
 
 class EquipmentDataSynchronizer(BaseDataSynchronizer):
@@ -60,9 +57,7 @@ class EquipmentDataSynchronizer(BaseDataSynchronizer):
         df[self.primary_key] = df[self.primary_key].astype(str)
 
         # Remover registros com chave primária nula ou vazia
-        df = df[
-            df[self.primary_key].notna() & df[self.primary_key].str.strip().astype(bool)
-        ]
+        df = df[df[self.primary_key].notna() & df[self.primary_key].str.strip().astype(bool)]
 
         # Selecionar apenas os campos de saída
         df = df[self.output_fields]
@@ -83,38 +78,40 @@ class EquipmentDataSynchronizer(BaseDataSynchronizer):
             processed_df = df
         super().synchronize(processed_df, db)
 
-    def _apply_changes(
-        self, changes: Dict[str, Any], df: pd.DataFrame, db: DatabaseConnection
-    ):
+    def _apply_changes(self, changes: Dict[str, Any], df: pd.DataFrame, db: DatabaseConnection):
         """Aplica as alterações ao banco de dados"""
         if changes["remove"]:
-            self._remove_records(changes["remove"], db)
-            for id in changes["remove"]:
-                delete_datasource(ds_id=id)
+            self._remove_records_scada_lts(record_ids=changes["remove"], db=db)
+            self._remove_records(changes["remove"], db=db)
 
         if not changes["update"].empty:
-            self._update_records(changes["update"], db)
+            self._update_records(changes["update"], db=db)
             self._sync_datapoint_scada(df=changes["update"])
 
         if not changes["new"].empty:
-            self._insert_records(changes["new"], db)
+            self._insert_records(changes["new"], db=db)
             self._sync_datapoint_scada(df=changes["new"])
 
     def _sync_datapoint_scada(self, df: pd.DataFrame):
+        global _xid_equip_to_host
+        _xid_equip_to_host = {}
         """Sincroniza os dados com o ScadaLTS"""
         print("_sync_datapoint_scada... Syncing with ScadaLTS")
         import_function = import_datasource_modbus
         if self.table_name == "EQP_MODBUS_IP":
             df = df[DATASOURCE_MODBUS_FIELDS]
+            # popular o dicionário _xid_equip_to_host
+            _xid_equip_to_host = {row["xid_equip"]: row["host"] for _, row in df.iterrows()}
+            print(f"_xid_equip_to_host: {_xid_equip_to_host}")
+            # # trocar o valor do xid_equip pelo valor do host
+            df["xid_equip"] = df["host"]
         elif self.table_name == "EQP_DNP3":
             df = df[DATASOURCE_DNP3_FIELDS]
             import_function = import_datasource_dnp3
         else:
             raise ValueError(f"Tabela não suportada: {self.table_name}")
         send_to_scada(df=df, import_function=import_function)
-        logger.info(
-            f"Enviados {len(df)} registros para o ScadaLTS, usando {import_function.__name__}."
-        )
+        logger.info(f"Enviados {len(df)} registros para o ScadaLTS, usando {import_function.__name__}.")
 
 
 class ModbusEquipmentSynchronizer(EquipmentDataSynchronizer):

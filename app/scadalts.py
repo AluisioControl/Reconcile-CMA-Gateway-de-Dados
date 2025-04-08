@@ -1,7 +1,6 @@
 import json
 import os
 import re
-import sys
 import time
 from io import BytesIO
 
@@ -98,9 +97,7 @@ def get_with_cookie(url, cookie, xid_sensor):
         # print(f"Resposta bruta: {response_data}")
 
         if status_code != 200:
-            print(
-                f"Erro ao buscar dados do xid_sensor {xid_sensor}. Status: {status_code}"
-            )
+            print(f"Erro ao buscar dados do xid_sensor {xid_sensor}. Status: {status_code}")
             return None
 
         return json.loads(response_data) if response_data else None
@@ -118,9 +115,7 @@ def get_valid_cookie():
     """Verifica se o cookie armazenado ainda é válido, senão obtém um novo."""
     current_time = time.time()
     print(f"Tempo atual: {current_time} ({time.ctime(current_time)})")
-    print(
-        f"Tempo de expiração do cookie: {cookie_cache['expires_at']} ({time.ctime(cookie_cache['expires_at'])})"
-    )
+    print(f"Tempo de expiração do cookie: {cookie_cache['expires_at']} ({time.ctime(cookie_cache['expires_at'])})")
 
     if cookie_cache["value"] and current_time < cookie_cache["expires_at"]:
         print(f"Usando cookie armazenado: {cookie_cache['value']}")
@@ -164,12 +159,8 @@ get_json_data("XIDSENS")  # Deve renovar o cookie
 def auth_ScadaLTS():
     logger.info("Autenticando no SCADA-LTS... ")
     if not username or not password:
-        print(
-            "Erro: Credenciais de acesso ao SCADA-LTS não encontradas no arquivo .env"
-        )
-        logger.error(
-            "Erro: Credenciais de acesso ao SCADA-LTS não encontradas no arquivo .env"
-        )
+        print("Erro: Credenciais de acesso ao SCADA-LTS não encontradas no arquivo .env")
+        logger.error("Erro: Credenciais de acesso ao SCADA-LTS não encontradas no arquivo .env")
         return
     try:
         buffer = BytesIO()
@@ -183,11 +174,11 @@ def auth_ScadaLTS():
         c.setopt(c.CONNECTTIMEOUT, 10)
         c.perform()
         c.close()
-        response = buffer.getvalue().decode("utf-8")
+        _ = buffer.getvalue().decode("utf-8")
         logger.info("OK\n")
     except ConnectionError as e:
         logger.error(f"Erro ao tentar autenticar no SCADA-LTS: {e}")
-        raise ConnectionError(f"Verifique a conexão com o SCADA-LTS")
+        raise ConnectionError(f"Verifique a conexão com o SCADA-LTS: {e}")
 
 
 # -------------------------------------------------------------
@@ -197,9 +188,7 @@ def send_data_to_scada(raw_data):
     try:
         buffer = BytesIO()
         c = pycurl.Curl()
-        c.setopt(
-            c.URL, f"{URL_BASE}/Scada-LTS/dwr/call/plaincall/EmportDwr.importData.dwr"
-        )
+        c.setopt(c.URL, f"{URL_BASE}/Scada-LTS/dwr/call/plaincall/EmportDwr.importData.dwr")
         c.setopt(c.POST, 1)
         c.setopt(c.POSTFIELDS, raw_data)
         c.setopt(c.COOKIEFILE, "cookies")
@@ -261,7 +250,7 @@ def import_datasource_modbus(
         )
         return raw_data
     except ConnectionError as e:
-        logger.error(f"Erro no import de datasource Modbus para SCADA-LTS")
+        logger.error(f"Erro no import de datasource Modbus para SCADA-LTS: {e}")
         return None
 
 
@@ -296,10 +285,8 @@ def import_datapoint_modbus(
     }
     # Verifica se algum parâmetro é None
     for param_name, param_value in required_params.items():
-        if param_value is "null" or param_value is None:
-            logger.error(
-                f"import_datapoint_modbus(xid_sensor={xid_sensor}): O campo '{param_name}' não pode ser None"
-            )
+        if param_value == "null" or param_value is None:
+            logger.error(f"import_datapoint_modbus(xid_sensor={xid_sensor}): O campo '{param_name}' não pode ser None")
             raise ValueError(
                 f"import_datapoint_modbus(xid_sensor={xid_sensor}) O campo '{param_name}' não pode ser None"
             )
@@ -328,25 +315,19 @@ def import_datapoint_modbus(
             f'"slaveId":{slaveId},'
             '"slaveMonitor":false,"socketMonitor":false},'
             '"eventDetectors":[],"engineeringUnits":"","purgeStrategy":"PERIOD",'
-            '"chartColour":null,"chartRenderer":null,"dataSourceXid":"'
-            + str(xid_equip)
-            + '",'
-            '"defaultCacheSize":1,"description":null,"deviceName":"'
-            + str(xid_sensor)
-            + '",'
+            '"chartColour":null,"chartRenderer":null,"dataSourceXid":"' + str(xid_equip) + '",'
+            '"defaultCacheSize":1,"description":null,"deviceName":"' + str(xid_sensor) + '",'
             '"discardExtremeValues":false,"discardHighLimit":1.7976931348623157,'
             '"discardLowLimit":-1.7976931348623157,'
             '"enabled":' + str(enabled).lower() + ", "
             '"eventTextRenderer"'
-            ':{"type":"EVENT_NONE"},"intervalLoggingPeriod":15,"name":"'
-            + str(nome)
-            + '","purgePeriod":1,'
+            ':{"type":"EVENT_NONE"},"intervalLoggingPeriod":15,"name":"' + str(nome) + '","purgePeriod":1,'
             '"purgeValuesLimit":100,"textRenderer":{"type":"PLAIN","suffix":""},"tolerance":0}]}\n'
             "batchId=8\n"
         )
         return raw_data
     except ConnectionError as e:
-        logger.error(f"Erro no import de datasource Modbus para SCADA-LTS")
+        logger.error(f"Erro no import de datasource Modbus para SCADA-LTS: {e}")
         return None
 
 
@@ -393,16 +374,14 @@ def import_datasource_dnp3(
         )
         return raw_data
     except ConnectionError as e:
-        logger.error(f"Erro no import de datasource DNP3 para SCADA-LTS")
+        logger.error(f"Erro no import de datasource DNP3 para SCADA-LTS: {e}")
         return None
 
 
 # -------------------------------------------------------------
 # Função para importação de Datapoints DNP3 no SCADA-LTS
 # -------------------------------------------------------------
-def import_datapoint_dnp3(
-    xid_sensor, controlCommand, dnp3DataType, index, timeoff, timeon, xid_equip, enabled
-):
+def import_datapoint_dnp3(xid_sensor, controlCommand, dnp3DataType, index, timeoff, timeon, xid_equip, enabled):
     try:
         raw_data = (
             "callCount=1\n"
@@ -424,29 +403,25 @@ def import_datapoint_dnp3(
             f'"timeOn":{timeon}'
             '},"eventDetectors":[],"engineeringUnits":"",'
             '"purgeStrategy":"PERIOD","chartColour":null,"chartRenderer":null,'
-            '"dataSourceXid":"'
-            + str(xid_equip)
-            + '","defaultCacheSize":1,"description":null,'
+            '"dataSourceXid":"' + str(xid_equip) + '","defaultCacheSize":1,"description":null,'
             '"deviceName":"' + str(xid_sensor) + '","discardExtremeValues":false,'
             '"discardHighLimit":1.7976931348623157,"discardLowLimit":-1.7976931348623157,'
             '"enabled":' + str(enabled).lower() + ","
             '"eventTextRenderer":{"type":"EVENT_NONE"},"intervalLoggingPeriod":15,'
-            '"name":"'
-            + str(xid_sensor)
-            + '","purgePeriod":1,"purgeValuesLimit":100,"textRenderer":'
+            '"name":"' + str(xid_sensor) + '","purgePeriod":1,"purgeValuesLimit":100,"textRenderer":'
             '{"type":"PLAIN","suffix":""},"tolerance":0.0}]}\n'
             "batchId=8\n"
         )
         return raw_data
     except ConnectionError as e:
-        logger.error(f"Erro no import de datapoint DNP3 para SCADA-LTS")
+        logger.error(f"Erro no import de datapoint DNP3 para SCADA-LTS: {e}")
         return None
 
 
 # -------------------------------------------------------------
 # Função para deletar um Datasource (equipamento) no SCADA-LTS
 # -------------------------------------------------------------
-def delete_datasource(ds_id):  # ds_id = xid_equip
+def delete_hard_datasource(ds_id):  # ds_id = xid_equip
     """
     Deleta um datasource/equipamento do SCADA-LTS pelo seu ID numérico.
 
@@ -464,6 +439,7 @@ def delete_datasource(ds_id):  # ds_id = xid_equip
             f"{URL_BASE}/Scada-LTS/dwr/call/plaincall/DataSourceListDwr.deleteDataSource.dwr",
         )
         c.setopt(c.POST, 1)
+        c.setopt(c.CUSTOMREQUEST, "DELETE")
         raw_data = (
             "callCount=1\n"
             "page=/Scada-LTS/data_sources.shtm\n"
@@ -483,9 +459,7 @@ def delete_datasource(ds_id):  # ds_id = xid_equip
         c.close()
 
         response = buffer.getvalue().decode("utf-8")
-        logger.debug(
-            f"delete_datasource(ds_id={ds_id}) response: {status_code} - {response}"
-        )
+        logger.debug(f"delete_datasource(ds_id={ds_id}) response: {status_code} - {response}")
 
         return status_code == 200
     except Exception as e:
@@ -496,7 +470,7 @@ def delete_datasource(ds_id):  # ds_id = xid_equip
 # -------------------------------------------------------------
 # Função para deletar um Datapoint (sensor) no SCADA-LTS
 # -------------------------------------------------------------
-def delete_datapoint(ds_id, dp_id):  # dp_id = xid_sensor, sd_id = xid_equip
+def delete_hard_datapoint(ds_id, dp_id):  # dp_id = xid_sensor, sd_id = xid_equip
     """
     Deleta um datapoint/sensor do SCADA-LTS pelo seu ID numérico.
 
@@ -519,9 +493,7 @@ def delete_datapoint(ds_id, dp_id):  # dp_id = xid_sensor, sd_id = xid_equip
         c.close()
 
         if status_code != 200:
-            logger.error(
-                f"Erro ao acessar datasource {ds_id}: status code {status_code}"
-            )
+            logger.error(f"Erro ao acessar datasource {ds_id}: status code {status_code}")
             return False
 
         # Depois faz o DELETE do datapoint
@@ -531,7 +503,8 @@ def delete_datapoint(ds_id, dp_id):  # dp_id = xid_sensor, sd_id = xid_equip
             c.URL,
             f"{URL_BASE}/Scada-LTS/dwr/call/plaincall/DataSourceEditDwr.deletePoint.dwr",
         )
-        c.setopt(c.POST, 1)
+        c.setopt(c.CUSTOMREQUEST, "DELETE")
+        # c.setopt(c.POST, 1)
         raw_data = (
             "callCount=1\n"
             f"page=/Scada-LTS/data_source_edit.shtm?dsid={ds_id}\n"
@@ -551,9 +524,7 @@ def delete_datapoint(ds_id, dp_id):  # dp_id = xid_sensor, sd_id = xid_equip
         c.close()
 
         response = buffer.getvalue().decode("utf-8")
-        logger.debug(
-            f"delete_datapoint(ds_id={ds_id}, dp_id={dp_id}) response: {status_code} - {response}"
-        )
+        logger.debug(f"delete_datapoint(ds_id={ds_id}, dp_id={dp_id}) response: {status_code} - {response}")
 
         return status_code == 200
     except Exception as e:

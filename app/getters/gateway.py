@@ -1,5 +1,3 @@
-import aiohttp
-
 from app.utils.http_utils import fetch_with_retry
 
 
@@ -46,9 +44,7 @@ def parse_gateway_data(data_gateway):
         "id_sub": data_gateway.get("substation", {}).get("id", None),
         "name_sub": data_gateway.get("substation", {}).get("name", None),
         "active_sub": data_gateway.get("substation", {}).get("active", None),
-        "sapAbbreviation_sub": data_gateway.get("substation", {}).get(
-            "sapAbbreviation", None
-        ),
+        "sapAbbreviation_sub": data_gateway.get("substation", {}).get("sapAbbreviation", None),
         "createdAt_gtw": data_gateway.get("createdAt", None),
         "updatedAt_gtw": data_gateway.get("updatedAt", None),
         "userCreatedId_gtw": data_gateway.get("userCreatedId", None),
@@ -83,7 +79,6 @@ async def fetch_gateway_by_id(host, auth_token, gateway_id):
 
 if __name__ == "__main__":
     import asyncio
-    import os
 
     from app.settings import configs
 

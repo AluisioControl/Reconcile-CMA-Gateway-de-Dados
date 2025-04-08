@@ -10,9 +10,7 @@ def multiplex_dicts(primary_list: list[dict], secondary_list: list[dict]) -> lis
     return [{**p, **s} for p in primary_list for s in secondary_list]
 
 
-def combine_primary_with_secondary(
-    primary: dict, secondary_list: list[dict]
-) -> list[dict]:
+def combine_primary_with_secondary(primary: dict, secondary_list: list[dict]) -> list[dict]:
     """
     Combina o dicionário primário com cada dicionário da lista secundária.
 

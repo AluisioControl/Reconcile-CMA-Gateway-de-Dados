@@ -102,9 +102,7 @@ primary_key = "xid_sensor"  # Definir a chave primária
 
 
 df_novos = df[~df[primary_key].isin(df_sqlite[primary_key])]  # Registros novos (INSERT)
-df_comuns = df[
-    df[primary_key].isin(df_sqlite[primary_key])
-]  # Registros existentes (UPDATE)
+df_comuns = df[df[primary_key].isin(df_sqlite[primary_key])]  # Registros existentes (UPDATE)
 ids_df = set(df[primary_key])  # Conjunto de PKs do DataFrame
 ids_sqlite = set(df_sqlite[primary_key])  # Conjunto de PKs do SQLite
 ids_remover = ids_sqlite - ids_df  # Registros a remover (DELETE)
@@ -117,7 +115,7 @@ print(f"\tRemover: {len(ids_remover)}")
 print("Realizado:")
 # 3. Remover registros que não estão no DataFrame
 if ids_remover:
-    query = f"DELETE FROM {db_table} WHERE {primary_key} IN (\"{'","'.join(map(str, ids_remover))}\")"
+    query = f'DELETE FROM {db_table} WHERE {primary_key} IN ("{'","'.join(map(str, ids_remover))}")'
     print("\n\tRemovidos", len(ids_remover), "registros.")
 
     cursor.execute(query)

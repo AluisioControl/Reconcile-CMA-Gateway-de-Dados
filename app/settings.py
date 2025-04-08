@@ -1,4 +1,3 @@
-import asyncio
 import os
 
 from dotenv import load_dotenv
@@ -30,17 +29,17 @@ class Configs:
             self.DEBUG = str(os.environ.get("DEBUG", False)).lower() == "true"
             self.MAX_RETRIES = int(os.environ.get("MAX_RETRIES", 3))
             self.MAX_PAGE_SIZE = int(os.environ.get("MAX_PAGE_SIZE", 9999))
-            self.MAX_PARALLEL_REQUESTS = int(
-                os.environ.get("MAX_PARALLEL_REQUESTS", 10)
-            )
+            self.MAX_PARALLEL_REQUESTS = int(os.environ.get("MAX_PARALLEL_REQUESTS", 10))
             self.initialized = True
+            SCADALTS_DELETE_TYPE = os.environ.get("SCADALTS_DELETE_TYPE", "soft")
+            if SCADALTS_DELETE_TYPE not in ["soft", "hard"]:
+                raise ValueError(f"Invalid SCADALTS_DELETE_TYPE: {SCADALTS_DELETE_TYPE}")
+            self.SCADALTS_DELETE_TYPE = SCADALTS_DELETE_TYPE
 
     @property
     async def auth_token(self):
         if self._auth_token is None:
-            self._auth_token = await get_auth_token(
-                self.host, self.username, self.password
-            )
+            self._auth_token = await get_auth_token(self.host, self.username, self.password)
         return self._auth_token
 
     @auth_token.setter

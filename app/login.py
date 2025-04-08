@@ -1,5 +1,4 @@
 import asyncio
-import json
 import os
 
 import aiohttp
@@ -14,9 +13,7 @@ async def get_auth_token(host: str, username: str, password: str):
         async with session.post(url, headers=headers, json=payload) as response:
             if response.status == 201:
                 token_response = await response.json()
-                return token_response.get(
-                    "access_token"
-                )  # Assumindo que o token está nesta chave
+                return token_response.get("access_token")  # Assumindo que o token está nesta chave
             else:
                 # Gerencia o erro de autenticação
                 raise Exception(f"Failed to get token, status code: {response.status}")

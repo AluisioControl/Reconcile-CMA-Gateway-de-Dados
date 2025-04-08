@@ -1,11 +1,9 @@
 import json
-from time import sleep
 
 import pandas as pd
 
 from app.logger import logger
 from app.scadalts import send_data_to_scada
-from app.translator import all_translates, map_fields
 
 # Constantes para campos de saída
 DATASOURCE_MODBUS_FIELDS = [

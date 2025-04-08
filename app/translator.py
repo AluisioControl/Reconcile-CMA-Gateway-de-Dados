@@ -21,7 +21,6 @@ def translate(df: pd.DataFrame, mapping: dict) -> pd.DataFrame:
 
 
 def map_fields(base_translate, base_in, base_out):
-
     if base_in not in bases_names:
         raise ValueError(f"Base de entrada inválida: {base_in}")
     if base_out not in bases_names:
@@ -180,7 +179,7 @@ sensores_modbus_translate = [
     ["CMA Gateway IP", "ip", "", "", "", "", ""],
     ["CMA Gateway Active", "active", "", "", "", "", ""],
     ["Manufacturer ID", "Manufacturer ID", "id_man", "id_man", "id_man", "", "id_man"],
-    ["Hardware ID", "id", "id_hw_sen", "id_hw_sen", "id_hw_sen", "", "id_hw_sen"]
+    ["Hardware ID", "id", "id_hw_sen", "id_hw_sen", "id_hw_sen", "", "id_hw_sen"],
 ]
 if len(sensores_modbus_translate[0]) != len(bases_names):
     raise ValueError("Número de colunas inválido para sensores_modbus_translate")
@@ -515,7 +514,15 @@ registradores_dnp3_translate = [
     ["Manufacturer ID", "id", "", "", "", "", ""],
     ["Manufacturer Name", "name", "", "", "", "", ""],
     ["Manufacturer Active", "active", "", "", "", "", ""],
-    ["Register Type ID", "id", "id_reg_reg_dnp3", "id_reg_reg_dnp3", "id_reg_reg_dnp3", "id_reg_reg_dnp3", "id_reg_reg_dnp3"],
+    [
+        "Register Type ID",
+        "id",
+        "id_reg_reg_dnp3",
+        "id_reg_reg_dnp3",
+        "id_reg_reg_dnp3",
+        "id_reg_reg_dnp3",
+        "id_reg_reg_dnp3",
+    ],
     ["Register Type Name", "name", "name_reg_reg_dnp3", "classificacao", "classificacao", "", "classificacao"],
     ["Sensor Type Name", "name", "name_sen_reg_dnp3", "tipo", "tipo", "", "Tipo"],
     ["Register Type Active", "active", "active_reg_reg_dnp_dnp3", "", "", "", ""],
@@ -544,8 +551,6 @@ all_translates += registradores_dnp3_translate
 if __name__ == "__main__":
     # Exemplo de uso
     import json
-
-    from app.getters.gateway import parse_gateway_data
 
     mapping = map_fields(
         base_translate=gateway_translate,

@@ -1,5 +1,4 @@
 import json
-import sys
 
 import pandas as pd
 
@@ -37,6 +36,8 @@ def create_gateway_schema() -> GenericSchema:
             "regional": "VARCHAR",
             "host": "VARCHAR",
             "status": "BOOLEAN",
+            "id_gtw": "INTEGER",
+            "id_sub": "INTEGER",
         },
         primary_key="xid_gateway",
     )
@@ -59,6 +60,13 @@ def create_modbus_schema() -> GenericSchema:
             "nome": "VARCHAR",
             "tipo": "VARCHAR",
             "classificacao": "VARCHAR",
+            "phase_reg_mod": "VARCHAR",
+            "circuitBreakerManeuverType_reg_mod": "VARCHAR",
+            "bushingSide_reg_mod": "VARCHAR",
+            "id_reg_reg_mod": "INTEGER",
+            "name_reg_reg_mod": "VARCHAR",
+            "id_sen_reg_mod": "INTEGER",
+            "name_sen_reg_mod": "VARCHAR",
         },
         primary_key="xid_sensor",
     )
@@ -84,6 +92,16 @@ def create_modbus_equipment_schema() -> GenericSchema:
             "retries": "INTEGER",
             "timeout": "INTEGER",
             "updatePeriods": "INTEGER",
+            "id_hdw": "INTEGER",
+            "name_hdw": "VARCHAR",
+            "type_sen": "VARCHAR",
+            "model_sen": "VARCHAR",
+            "id_man": "INTEGER",
+            "id_hdw": "INTEGER",
+            "name_hdw": "VARCHAR",
+            "type_sen": "VARCHAR",
+            "model_sen": "VARCHAR",
+            "name_sen": "VARCHAR",
         },
         primary_key="xid_equip",
     )
@@ -143,9 +161,7 @@ def create_dp_tags_schema() -> GenericSchema:
 def sync_gateways():
     logger.info("Sincronizando dados de gateways...")
     loader = GatewayDataLoader("./cma_gateways.json", parse_gateway_data)
-    translator = DataTranslator(
-        map_fields(gateway_translate, "Lógica de montagem", "Gateway de Dados")
-    )
+    translator = DataTranslator(map_fields(gateway_translate, "Lógica de montagem", "Gateway de Dados"))
     schema = create_gateway_schema()
     synchronizer = GatewayDataSynchronizer()
 
@@ -176,12 +192,8 @@ def sync_dp_modbus(df: pd.DataFrame):
 
     # df = loader.load()  # carregar dados do arquivo json
     df = df.drop_duplicates(subset=["id_reg_mod"])  # remover registros duplicados
-    df["id_reg_mod"] = df["id_reg_mod"].astype(
-        str
-    )  # converter para string evitando erros
-    df = df[
-        df["id_reg_mod"].notnull() & (df["id_reg_mod"] != "")
-    ]  # remover registros nulos ou vazios
+    df["id_reg_mod"] = df["id_reg_mod"].astype(str)  # converter para string evitando erros
+    df = df[df["id_reg_mod"].notnull() & (df["id_reg_mod"] != "")]  # remover registros nulos ou vazios
     df_translated = translator.translate(df)  # traduzir campos cma_web to cma_gateway
     # remover colunas duplicadas depois da tradução
     df_translated = df_translated.loc[:, ~df_translated.columns.duplicated()]
@@ -199,6 +211,13 @@ def sync_dp_modbus(df: pd.DataFrame):
         "nome",
         "tipo",
         "classificacao",
+        "phase_reg_mod",
+        "circuitBreakerManeuverType_reg_mod",
+        "bushingSide_reg_mod",
+        "id_reg_reg_mod",
+        # "name_reg_reg_mod",
+        "id_sen_reg_mod",
+        # "name_sen_reg_mod",
     ]
     df_final = df_translated[out_fields]  # manter apenas as colunas desejadas
 
@@ -230,15 +249,11 @@ def sync_eqp_modbus(df: pd.DataFrame):
     # df = loader.load()  # carregar dados do arquivo json
     df = df.drop_duplicates(subset=["id_sen"])  # remover sensores duplicados
     df["id_sen"] = df["id_sen"].astype(str)  # converter para string evitando erros
-    df = df[
-        df["id_sen"].notnull() & (df["id_sen"] != "")
-    ]  # remover registros nulos ou vazios
+    df = df[df["id_sen"].notnull() & (df["id_sen"] != "")]  # remover registros nulos ou vazios
     df_translated = translator.translate(df)  # traduzir campos cma_web to cma_gateway
     # remover colunas duplicadas depois da tradução
     df_translated = df_translated.loc[:, ~df_translated.columns.duplicated()]
-    df_final = df_translated[
-        synchronizer.OUTPUT_FIELDS
-    ]  # manter apenas as colunas desejadas
+    df_final = df_translated[synchronizer.OUTPUT_FIELDS]  # manter apenas as colunas desejadas
     # remover colunas duplicadas depois da
     with DatabaseConnection(configs.sqlite_db_path) as db:
         schema.initialize(db)
@@ -248,14 +263,6 @@ def sync_eqp_modbus(df: pd.DataFrame):
 
 def sync_eqp_tags(df: pd.DataFrame):  # tags dos registradores
     logger.info("Sincronizando tags de equipamentos...")
-    # loader = JsonDataLoader("./data.json")
-    translator = DataTranslator(
-        map_fields(
-            gateway_translate + hardware_translate,
-            "Lógica de montagem",
-            "Banco Middlware",
-        )
-    )
     schema = create_eqp_tags_schema()
     synchronizer = EqpTagsDataSynchronizer()
 
@@ -270,18 +277,14 @@ def sync_eqp_tags(df: pd.DataFrame):  # tags dos registradores
     # precisamos pegar o valor de sen_mod_tags que é um json e transformar em um DataFrame
     combined_tags = []
     for index, row in df.iterrows():
-        combined_tags += combine_primary_with_secondary(
-            {"id_sen": row["id_sen"]}, row["sen_mod_tags"]
-        )
+        combined_tags += combine_primary_with_secondary({"id_sen": row["id_sen"]}, row["sen_mod_tags"])
 
     if not combined_tags:
         logger.warning("Nenhuma tag de equipamento modbus encontrada.")
         return
 
     df_final = pd.DataFrame(combined_tags)
-    df_final.rename(
-        columns={"id_sen": "xid_equip", "name": "nome", "value": "valor"}, inplace=True
-    )
+    df_final.rename(columns={"id_sen": "xid_equip", "name": "nome", "value": "valor"}, inplace=True)
     df_final["id"] = df_final["id"].astype(str)
     df_final["xid_equip"] = df_final["xid_equip"].astype(str)
     df_final["nome"] = df_final["nome"].astype(str)
@@ -295,14 +298,6 @@ def sync_eqp_tags(df: pd.DataFrame):  # tags dos registradores
 
 def sync_dp_tags(df: pd.DataFrame):  # tags dos sensores
     logger.info("Sincronizando tags dos sensores...")
-    # loader = JsonDataLoader("./data.json")
-    translator = DataTranslator(
-        map_fields(
-            gateway_translate + hardware_translate,
-            "Lógica de montagem",
-            "Banco Middlware",
-        )
-    )
     schema = create_dp_tags_schema()
     synchronizer = DpTagsDataSynchronizer()
 
@@ -316,18 +311,14 @@ def sync_dp_tags(df: pd.DataFrame):  # tags dos sensores
 
     combined_tags = []
     for index, row in df.iterrows():
-        combined_tags += combine_primary_with_secondary(
-            {"id_sen": row["id_sen"]}, row["sen_mod_tags"]
-        )
+        combined_tags += combine_primary_with_secondary({"id_sen": row["id_sen"]}, row["sen_mod_tags"])
 
     if not combined_tags:
         logger.warning("Nenhuma tag de sensor modbus encontrada.")
         return
 
     df_final = pd.DataFrame(combined_tags)
-    df_final.rename(
-        columns={"id_sen": "xid_sensor", "name": "nome", "value": "valor"}, inplace=True
-    )
+    df_final.rename(columns={"id_sen": "xid_sensor", "name": "nome", "value": "valor"}, inplace=True)
     df_final["id"] = df_final["id"].astype(str)
     df_final["xid_sensor"] = df_final["xid_sensor"].astype(str)
     df_final["nome"] = df_final["nome"].astype(str)
@@ -348,13 +339,9 @@ if __name__ == "__main__":
     auth_ScadaLTS()
     sync_eqp_modbus(df=collected_data.copy())
     # sync_eqp_dnp3() # TODO: implementar sincronização de equipamentos dnp3
-    sync_eqp_tags(
-        df=collected_data.copy()
-    )  # TODO: implementar tags de equipamentos dnp3
+    sync_eqp_tags(df=collected_data.copy())  # TODO: implementar tags de equipamentos dnp3
     sync_dp_modbus(df=collected_data.copy())
-    sync_dp_tags(
-        df=collected_data.copy()
-    )  # TODO: implementar tags de equipamentos dnp3
+    sync_dp_tags(df=collected_data.copy())  # TODO: implementar tags de equipamentos dnp3
     # Adicionar outras sincronizações aqui
     logger.info("Sincronização concluída!")
     print("\nSincronização concluída!\n")

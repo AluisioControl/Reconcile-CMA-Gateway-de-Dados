@@ -4,7 +4,6 @@ import sqlite3
 import pandas as pd
 
 from app.settings import configs
-from app.translator import all_translates, map_fields, translate
 from app.utils.data import combine_primary_with_secondary
 
 # Carregar dados do JSON
@@ -38,9 +37,7 @@ df = df[df["id_sen"].notna() & df["id_sen"].str.strip().astype(bool)]
 combined_tags = []
 df["sen_mod_tags"] = df["sen_mod_tags"].apply(lambda x: json.loads(x))
 for index, row in df.iterrows():
-    combined_tags += combine_primary_with_secondary(
-        {"id_sen": row["id_sen"]}, row["sen_mod_tags"]
-    )
+    combined_tags += combine_primary_with_secondary({"id_sen": row["id_sen"]}, row["sen_mod_tags"])
 
 df_tags = pd.DataFrame(combined_tags)
 mapping = {"id_sen": "xid_equip", "id": "id", "name": "nome", "value": "valor"}
@@ -81,7 +78,7 @@ print(f"\tRegistros comuns: {len(df_tags_atuializar)}")
 print(f"\tRegistros a remover: {len(ids_remover_modbus)}")
 
 if ids_remover_modbus:
-    query = f"DELETE FROM {db_table} WHERE {primary_key} IN (\"{'',''.join(map(str, ids_remover_modbus))}\")"
+    query = f'DELETE FROM {db_table} WHERE {primary_key} IN ("{"", "".join(map(str, ids_remover_modbus))}")'
     cursor.execute(query)
     print(f"\n\tRemovidos {len(ids_remover_modbus)} registros de {db_table}.")
 

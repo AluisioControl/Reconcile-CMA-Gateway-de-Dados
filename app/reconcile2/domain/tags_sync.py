@@ -13,28 +13,24 @@ class DpTagsDataSynchronizer(BaseDataSynchronizer):
     def __init__(self):
         super().__init__(table_name="DP_TAGS", primary_key="id")
 
-    def _apply_changes(
-        self, changes: Dict[str, any], df: pd.DataFrame, db: DatabaseConnection
-    ):
+    def _apply_changes(self, changes: Dict[str, any], df: pd.DataFrame, db: DatabaseConnection):
         if changes["remove"]:
-            query = f"DELETE FROM {self.table_name} WHERE {self.primary_key} IN ({','.join(map(str, changes['remove']))})"
+            query = (
+                f"DELETE FROM {self.table_name} WHERE {self.primary_key} IN ({','.join(map(str, changes['remove']))})"
+            )
             db.execute(query)
             logger.info(f"Removido o DP_TAG de id: {changes['remove']}")
         else:
             logger.info("Nenhum DP_TAG removido")
 
         if not changes["update"].empty:
-            changes["update"].to_sql(
-                self.table_name, db.connection, if_exists="replace", index=False
-            )
+            changes["update"].to_sql(self.table_name, db.connection, if_exists="replace", index=False)
             logger.info(f"Atualizado DP_TAG: {changes['update']['id'].to_list()}")
         else:
             logger.info("Nenhum DP_TAG atualizado")
 
         if not changes["new"].empty:
-            changes["new"].to_sql(
-                self.table_name, db.connection, if_exists="append", index=False
-            )
+            changes["new"].to_sql(self.table_name, db.connection, if_exists="append", index=False)
             logger.info(f"Inserido novo DP_TAG {changes['new']['id'].to_list()}")
         else:
             logger.info("Nenhum novo DP_TAG inserido")
@@ -46,28 +42,24 @@ class EqpTagsDataSynchronizer(BaseDataSynchronizer):
     def __init__(self):
         super().__init__(table_name="EQP_TAGS", primary_key="id")
 
-    def _apply_changes(
-        self, changes: Dict[str, any], df: pd.DataFrame, db: DatabaseConnection
-    ):
+    def _apply_changes(self, changes: Dict[str, any], df: pd.DataFrame, db: DatabaseConnection):
         if changes["remove"]:
-            query = f"DELETE FROM {self.table_name} WHERE {self.primary_key} IN ({','.join(map(str, changes['remove']))})"
+            query = (
+                f"DELETE FROM {self.table_name} WHERE {self.primary_key} IN ({','.join(map(str, changes['remove']))})"
+            )
             db.execute(query)
             logger.info(f"Removido o EQP_TAG de id: {changes['remove']}")
         else:
             logger.info("Nenhum EQP_TAG removido")
 
         if not changes["update"].empty:
-            changes["update"].to_sql(
-                self.table_name, db.connection, if_exists="replace", index=False
-            )
+            changes["update"].to_sql(self.table_name, db.connection, if_exists="replace", index=False)
             logger.info(f"Atualizado EQP_TAG: {changes['update']['id'].to_list()}")
         else:
             logger.info("Nenhum EQP_TAG atualizado")
 
         if not changes["new"].empty:
-            changes["new"].to_sql(
-                self.table_name, db.connection, if_exists="append", index=False
-            )
+            changes["new"].to_sql(self.table_name, db.connection, if_exists="append", index=False)
             logger.info(f"Inserido novo EQP_TAG {changes['new']['id'].to_list()}")
         else:
             logger.info("Nenhum novo EQP_TAG inserido")

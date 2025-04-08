@@ -1,6 +1,5 @@
 import asyncio
 
-import aiohttp
 
 from app.utils.http_utils import fetch_with_retry
 
@@ -44,9 +43,7 @@ async def fetch_hardwares_by_gateway(
     if name:
         params["name"] = name
     if active is not None:
-        params["active"] = str(
-            active
-        ).lower()  # API pode esperar "true" ou "false" como string
+        params["active"] = str(active).lower()  # API pode esperar "true" ou "false" como string
 
     url = f"{host}/hardwares/all"
     headers = {"Authorization": f"Bearer {auth_token}"}
@@ -111,16 +108,13 @@ async def fetch_hardware_by_id(host, auth_token, hardware_id):
 
 if __name__ == "__main__":
     import asyncio
-    import os
 
     from app.settings import configs
     from tests.conftest import gateways
 
     async def main():
         cma_gateway_id = gateways[1]["id"]
-        hardwares = await fetch_hardwares_by_gateway(
-            configs.host, configs.auth_token, cma_gateway_id=cma_gateway_id
-        )
+        hardwares = await fetch_hardwares_by_gateway(configs.host, configs.auth_token, cma_gateway_id=cma_gateway_id)
         print("All hardwares:")
         print(hardwares)
 

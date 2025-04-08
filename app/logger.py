@@ -1,10 +1,7 @@
 import logging
 import os
-import re
-import time
-from io import BytesIO
+import pika
 
-import pycurl
 from dotenv import load_dotenv
 
 if not load_dotenv():
@@ -15,10 +12,73 @@ LOG_INFO_DEBUG = "./logs/scadalts_debug.log"
 LOG_INFO_WARNING = "./logs/scadalts_info_warning.log"
 LOG_ERROR = "./logs/scadalts_errors.log"
 
+# Configurações do RabbitMQ a partir do .env
+RABBIT_HOST = os.getenv("RABBIT_HOST")
+RABBIT_PORT = int(os.getenv("RABBIT_PORT"))
+RABBIT_USER = os.getenv("RABBIT_USER")
+RABBIT_PASS = os.getenv("RABBIT_PASS")
+RABBIT_CAMINHO = os.getenv("RABBIT_CAMINHO")
+RABBIT_TOPICO = os.getenv("RABBIT_TOPICO")
+RABBIT_CHAVE = os.getenv("RABBIT_CHAVE")
+
 # Configuração do formatter
-log_formatter = logging.Formatter(
-    "[GATEWAY-CMA] %(asctime)s - %(levelname)s - %(funcName)s - %(message)s"
+log_formatter = logging.Formatter("[GATEWAY-CMA] %(asctime)s - %(levelname)s - %(funcName)s - %(message)s")
+
+
+# Handler customizado para enviar mensagens ao RabbitMQ
+class RabbitMQHandler(logging.Handler):
+    def __init__(self, host, port, username, password, exchange, routing_key):
+        super().__init__()
+        self.host = host
+        self.port = port
+        self.credentials = pika.PlainCredentials(username, password)
+        self.exchange = exchange
+        self.routing_key = routing_key
+        self.connection = None
+        self.channel = None
+        self.connect()
+
+    def connect(self):
+        try:
+            # Estabelece conexão com RabbitMQ
+            self.connection = pika.BlockingConnection(
+                pika.ConnectionParameters(host=self.host, port=self.port, credentials=self.credentials)
+            )
+            self.channel = self.connection.channel()
+            # Declara o exchange do tipo topic
+            self.channel.exchange_declare(exchange=self.exchange, exchange_type="topic")
+        except pika.exceptions.AMQPConnectionError as e:
+            print(f"Erro ao conectar ao RabbitMQ ({self.host}:{self.port}): {e}")
+
+    def emit(self, record):
+        try:
+            if self.connection is None or self.connection.is_closed:
+                self.connect()
+
+            # Formata a mensagem de log
+            msg = self.format(record)
+
+            # Publica a mensagem no RabbitMQ
+            self.channel.basic_publish(exchange=self.exchange, routing_key=self.routing_key, body=msg.encode("utf-8"))
+        except Exception as e:
+            print(f"Erro ao enviar mensagem para RabbitMQ: {e}")
+
+    def close(self):
+        if self.connection and not self.connection.is_closed:
+            self.connection.close()
+        super().close()
+
+
+# Carregando variáveis de ambiente
+rabbit_handler = RabbitMQHandler(
+    host=RABBIT_HOST,
+    port=RABBIT_PORT,
+    username=RABBIT_USER,
+    password=RABBIT_PASS,
+    exchange=RABBIT_TOPICO,
+    routing_key=RABBIT_CHAVE,
 )
+
 
 # Criando handlers para diferentes níveis de log
 debug_handler = logging.FileHandler(LOG_INFO_WARNING)
@@ -32,6 +92,9 @@ info_warning_handler.setLevel(logging.INFO)  # Aceita INFO e WARNING
 error_handler = logging.FileHandler(LOG_ERROR)
 error_handler.setFormatter(log_formatter)
 error_handler.setLevel(logging.ERROR)  # Aceita ERROR e acima
+
+rabbit_handler.setFormatter(log_formatter)
+rabbit_handler.setLevel(logging.ERROR)  # Aceita ERROR e acima
 
 
 # Filtros personalizados para segregar os níveis
