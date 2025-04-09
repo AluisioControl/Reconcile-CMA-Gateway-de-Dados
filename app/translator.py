@@ -105,10 +105,10 @@ sensores_modbus_translate = [
     ["Hardware ID", "Hardware ID", "hardwareId_sen", "", "", "", ""],
     ["Name", "Name", "name_sen", "name_sen", "name_sen", "", "name_sen"],
     ["Description", "Description", "description_sen", "", "", "", ""],
-    ["Model", "Model", "model_sen", "modelo", "modelo", "", "Modelo"],
+    ["Model", "Model", "model_sen", "model_sen", "model_sen", "", "model_sen"],
     ["IP", "IP", "ip_sen", "host", "host", "host", "IP"],
     ["Port", "Port", "port_sen", "port", "port", "port", ""],
-    ["Type", "Type", "type_sen", "type", "type", "", "Protocolo"],
+    ["Type", "Type", "type_sen", "type_sen", "type_sen", "", "tipo_sensor_modbus"],
     ["Attempts", "Attempts", "attempts_sen", "retries", "retries", "retries", ""],
     ["Time Limit", "Time Limit", "timeLimit_sen", "timeout", "timeout", "timeout", ""],
     [

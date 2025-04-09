@@ -220,6 +220,5 @@ def create_database(db_path):
     print("Banco de dados inicializado com sucesso!")
 
 if __name__ == "__main__":
-    # Caminho para o banco de dados
-    db_path = "CMA_Gateway.db"
-    create_database(db_path)
+    from app.settings import configs
+    create_database(configs.sqlite_db_path)

@@ -121,7 +121,6 @@ class ModbusEquipmentSynchronizer(EquipmentDataSynchronizer):
         "xid_equip",
         "xid_gateway",
         "fabricante",
-        "modelo",
         "type",
         "sap_id",
         "enabled",
@@ -134,6 +133,12 @@ class ModbusEquipmentSynchronizer(EquipmentDataSynchronizer):
         "retries",
         "timeout",
         "updatePeriods",
+        "id_hdw",
+        "name_hdw",
+        "type_sen",
+        "model_sen",
+        "name_sen",
+        "id_man"
     ]
 
     def __init__(self):

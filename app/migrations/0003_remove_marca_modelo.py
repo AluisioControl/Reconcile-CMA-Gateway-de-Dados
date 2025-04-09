@@ -1,0 +1,1 @@
+# TODO remove marca and model from EQP_MODBUS_IP

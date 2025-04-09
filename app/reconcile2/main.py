@@ -210,7 +210,6 @@ def sync_dp_modbus(df: pd.DataFrame):
         "slaveId",
         "enabled",
         "nome",
-        "tipo",
         "classificacao",
         "phase",
         "circuitBreakerManeuverType_reg_mod",
@@ -254,6 +253,9 @@ def sync_eqp_modbus(df: pd.DataFrame):
     df_translated = translator.translate(df)  # traduzir campos cma_web to cma_gateway
     # remover colunas duplicadas depois da tradução
     df_translated = df_translated.loc[:, ~df_translated.columns.duplicated()]
+    print("# show columns")
+    print(df_translated.columns)
+    print("-----------")
     df_final = df_translated[synchronizer.OUTPUT_FIELDS]  # manter apenas as colunas desejadas
     # remover colunas duplicadas depois da
     with DatabaseConnection(configs.sqlite_db_path) as db:

@@ -43,7 +43,7 @@ def migrate_database(db_path):
     add_column_if_not_exists(cursor, "EQP_MODBUS_IP", "id_man", "INTEGER")
 
     # Adicionando colunas à tabela DP_MODBUS_IP
-    add_column_if_not_exists(cursor, "DP_MODBUS_IP", "phase_reg_mod", "TEXT")
+    add_column_if_not_exists(cursor, "DP_MODBUS_IP", "phase", "TEXT")
     add_column_if_not_exists(cursor, "DP_MODBUS_IP", "circuitBreakerManeuverType_reg_mod", "TEXT")
     add_column_if_not_exists(cursor, "DP_MODBUS_IP", "bushingSide", "TEXT")
     add_column_if_not_exists(cursor, "DP_MODBUS_IP", "id_reg_reg_mod", "INTEGER")
@@ -57,6 +57,5 @@ def migrate_database(db_path):
     print("Migração concluída com sucesso!")
 
 if __name__ == "__main__":
-    # Caminho para o banco de dados
-    db_path = "CMA_Gateway.db"
-    migrate_database(db_path)
+    from app.settings import configs
+    migrate_database(configs.sqlite_db_path)

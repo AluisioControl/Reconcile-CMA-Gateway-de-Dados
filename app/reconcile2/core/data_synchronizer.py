@@ -158,11 +158,11 @@ class BaseDataSynchronizer(DataSynchronizer):
                             # converter o tipo de ambos os DataFrames para o tipo para string
                             common_records[column] = common_records[column].astype(str)
                             existing_data[column] = existing_data[column].astype(str)
-                        except TypeError as e:
-                            logger.error(f"Erro inesperado ao converter {column}: {e}")
-                            # converter o tipo de ambos os DataFrames para o tipo para string
-                            common_records[column] = common_records[column].astype(str)
-                            existing_data[column] = existing_data[column].astype(str)
+                        # except TypeError as e:
+                        #     logger.error(f"Erro inesperado ao converter {column}: {e}")
+                        #     # converter o tipo de ambos os DataFrames para o tipo para string
+                        #     common_records[column] = common_records[column].astype(str)
+                        #     existing_data[column] = existing_data[column].astype(str)
 
             # regra de negócio: só atualizar registros que possuem diferenças
             merged_df = existing_data.merge(common_records, indicator=True, how="outer")  # merge dos DataFrames
