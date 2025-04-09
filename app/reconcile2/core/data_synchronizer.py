@@ -150,10 +150,16 @@ class BaseDataSynchronizer(DataSynchronizer):
                     if common_records[column].dtype != existing_data[column].dtype:  # se o tipo de dado for diferente
                         # converter o tipo de dado da coluna do DataFrame comum para o tipo de dado do DataFrame existente
                         try:
+                            print(f"Convertendo {column} de {common_records[column].dtype} para {existing_data[column].dtype}")
                             existing_data[column] = existing_data[column].astype(common_records[column].dtype)
                             logger.warning(f"{column} convertido para {common_records[column].dtype}")
                         except ValueError as e:
                             logger.error(f"Erro ao converter {column} para {existing_data[column].dtype}: {e}")
+                            # converter o tipo de ambos os DataFrames para o tipo para string
+                            common_records[column] = common_records[column].astype(str)
+                            existing_data[column] = existing_data[column].astype(str)
+                        except TypeError as e:
+                            logger.error(f"Erro inesperado ao converter {column}: {e}")
                             # converter o tipo de ambos os DataFrames para o tipo para string
                             common_records[column] = common_records[column].astype(str)
                             existing_data[column] = existing_data[column].astype(str)

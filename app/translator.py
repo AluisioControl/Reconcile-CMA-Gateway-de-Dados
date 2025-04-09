@@ -39,7 +39,7 @@ def map_fields(base_translate, base_in, base_out):
 
 
 gateway_translate = [
-    ["ID", "id", "id_gtw", "", "", "", ""],
+    ["ID", "id", "id_gtw", "id_gtw", "id_gtw", "", "id_gtw"],
     ["Created At", "createdAt", "createdAt_gtw", "", "", "", ""],
     ["Updated At", "updatedAt", "updatedAt_gtw", "", "", "", ""],
     ["User Created ID", "userCreatedId", "userCreatedId_gtw", "", "", "", ""],
@@ -73,13 +73,13 @@ if len(gateway_translate[0]) != len(bases_names):
     raise ValueError("Número de colunas inválido para gateway_translate")
 
 hardware_translate = [
-    ["ID", "id", "id_hdw", "", "", "", ""],
+    ["ID", "id", "id_hdw", "id_hdw", "id_hdw", "", "id_hdw"],
     ["Created At", "createdAt", "createdAt_hdw", "", "", "", ""],
     ["Updated At", "updatedAt", "updatedAt_hdw", "", "", "", ""],
     ["User Created ID", "userCreatedId", "userCreatedId_hdw", "", "", "", ""],
     ["User Updated ID", "userUpdatedId", "userUpdatedId_hdw", "", "", "", ""],
     ["CMA Gateway ID", "cmaGatewayId", "cmaGatewayId_hdw", "", "", "", ""],
-    ["Name", "name", "name_hdw", "", "", "", ""],
+    ["Name", "name", "name_hdw", "name_hdw", "name_hdw", "", "name_hdw"],
     ["SAP ID", "sapId", "sapId_hdw", "sap_id", "sap_id", "", "SAP_id"],
     ["", "type", "", "", "", "", ""],
     ["", "model", "", "", "", "", ""],
@@ -103,7 +103,7 @@ sensores_modbus_translate = [
     ["User Updated ID", "User Updated ID", "userUpdatedId_sen", "", "", "", ""],
     ["Manufacturer ID", "Manufacturer ID", "manufacturerId_sen", "", "", "", ""],
     ["Hardware ID", "Hardware ID", "hardwareId_sen", "", "", "", ""],
-    ["Name", "Name", "name_sen", "", "", "", ""],
+    ["Name", "Name", "name_sen", "name_sen", "name_sen", "", "name_sen"],
     ["Description", "Description", "description_sen", "", "", "", ""],
     ["Model", "Model", "model_sen", "modelo", "modelo", "", "Modelo"],
     ["IP", "IP", "ip_sen", "host", "host", "host", "IP"],
@@ -157,7 +157,7 @@ sensores_modbus_translate = [
         "",
     ],
     ["Active", "Active", "active_sen", "enabled", "enabled", "enabled", "Status"],
-    ["Manufacturer ID", "Manufacturer ID", "id_man", "", "", "", ""],
+    ["Manufacturer ID", "Manufacturer ID", "id_man", "id_man", "id_man", "", "id_man"],
     [
         "Manufacturer Name",
         "Manufacturer Name",
@@ -252,16 +252,16 @@ registradores_modbus_translate = [
         "",
     ],
     ["Active", "active", "active_reg_mod", "enabled", "enabled", "enabled", "Status"],
-    ["", "phase", "", "", "", "", ""],
-    ["", "circuitBreakerManeuverType", "", "", "", "", ""],
-    ["", "bushingSide", "", "", "", "", ""],
+    ["phase", "phase", "phase_reg_mod", "phase", "phase", "", "phase"],
+    ["circuitBreakerManeuverType", "circuitBreakerManeuverType", "circuitBreakerManeuverType", "circuitBreakerManeuverType", "circuitBreakerManeuverType", "", "circuitBreakerManeuverType"],
+    ["bushingSide", "bushingSide", "bushingSide_reg_mod", "bushingSide", "bushingSide", "", "bushingSide"],
     ["Sensor Modbus ID", "id", "id_sen", "", "", "", ""],
     ["Sensor Modbus Name", "name", "name_sen", "", "", "", ""],
     ["Sensor Modbus Description", "description", "description_sen", "", "", "", ""],
     ["Sensor Modbus Model", "model", "model_sen", "", "", "", ""],
     ["Sensor Modbus IP", "ip", "ip_sen", "", "", "", ""],
     ["Sensor Modbus Port", "port", "port_sen", "", "", "", ""],
-    ["Sensor Modbus Type", "type", "type_sen", "", "", "", ""],
+    ["Sensor Modbus Type", "type", "type_sen", "type_sen", "type_sen", "", "type_sen"],
     ["Sensor Modbus Attempts", "attempts", "attempts_sen", "", "", "", ""],
     ["Sensor Modbus Time Limit", "timeLimit", "timeLimit_sen", "", "", "", ""],
     [

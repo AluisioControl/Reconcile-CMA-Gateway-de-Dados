@@ -45,11 +45,11 @@ def migrate_database(db_path):
     # Adicionando colunas à tabela DP_MODBUS_IP
     add_column_if_not_exists(cursor, "DP_MODBUS_IP", "phase_reg_mod", "TEXT")
     add_column_if_not_exists(cursor, "DP_MODBUS_IP", "circuitBreakerManeuverType_reg_mod", "TEXT")
-    add_column_if_not_exists(cursor, "DP_MODBUS_IP", "bushingSide_reg_mod", "TEXT")
+    add_column_if_not_exists(cursor, "DP_MODBUS_IP", "bushingSide", "TEXT")
     add_column_if_not_exists(cursor, "DP_MODBUS_IP", "id_reg_reg_mod", "INTEGER")
-    add_column_if_not_exists(cursor, "DP_MODBUS_IP", "name_reg_reg_mod", "TEXT")
+    add_column_if_not_exists(cursor, "DP_MODBUS_IP", "classificacao", "TEXT")
     add_column_if_not_exists(cursor, "DP_MODBUS_IP", "id_sen_reg_mod", "INTEGER")
-    add_column_if_not_exists(cursor, "DP_MODBUS_IP", "name_sen_reg_mod", "TEXT")
+    add_column_if_not_exists(cursor, "DP_MODBUS_IP", "tipo", "TEXT")
 
     # Confirmar as alterações e fechar a conexão
     conn.commit()

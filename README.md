@@ -37,6 +37,11 @@ PYTHONPATH=$(pwd) uv run python -m app.collect_cma_web
 ```
 
 ### Conciliação das Informações com o Middleware
+Para criar o banco de dados e as tabelas necessárias, execute:
+
+```bash
+PYTHONPATH=$(pwd) uv run python -m app.migrates.0001_initial_db
+```
 
 Para reconciliar as informações coletadas com as bases de dados do `CMA_Gateway` e `ScadaLTS`, utilize o comando:
 
@@ -73,4 +78,3 @@ Para rodar a suíte de testes do projeto, utilize:
 ```bash
 PYTHONPATH=$(pwd) uv run python tests/test.py
 ```
-

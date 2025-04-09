@@ -197,6 +197,7 @@ def sync_dp_modbus(df: pd.DataFrame):
     df_translated = translator.translate(df)  # traduzir campos cma_web to cma_gateway
     # remover colunas duplicadas depois da tradução
     df_translated = df_translated.loc[:, ~df_translated.columns.duplicated()]
+    print(df_translated.columns)
     out_fields = [
         "xid_sensor",
         "xid_equip",
@@ -211,13 +212,13 @@ def sync_dp_modbus(df: pd.DataFrame):
         "nome",
         "tipo",
         "classificacao",
-        "phase_reg_mod",
+        "phase",
         "circuitBreakerManeuverType_reg_mod",
-        "bushingSide_reg_mod",
+        "bushingSide",
         "id_reg_reg_mod",
-        # "name_reg_reg_mod",
+        "classificacao",
         "id_sen_reg_mod",
-        # "name_sen_reg_mod",
+        "tipo",
     ]
     df_final = df_translated[out_fields]  # manter apenas as colunas desejadas
 
