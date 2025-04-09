@@ -221,5 +221,5 @@ def create_database(db_path):
 
 if __name__ == "__main__":
     # Caminho para o banco de dados
-    db_path = "CMA_gateway.db"
+    db_path = "CMA_Gateway.db"
     create_database(db_path)

@@ -40,7 +40,26 @@ PYTHONPATH=$(pwd) uv run python -m app.collect_cma_web
 Para criar o banco de dados e as tabelas necessárias, execute:
 
 ```bash
-PYTHONPATH=$(pwd) uv run python -m app.migrates.0001_initial_db
+$ rm CMA_Gateway.db 
+$ uv run python -m app.migrations.0001_initial_db
+Banco de dados inicializado com sucesso!
+$ uv run python -m app.migrations.0002_add_field
+Coluna 'id_gtw' adicionada à tabela 'CMA_GD'.
+Coluna 'id_sub' adicionada à tabela 'CMA_GD'.
+Coluna 'id_hdw' adicionada à tabela 'EQP_MODBUS_IP'.
+Coluna 'name_hdw' adicionada à tabela 'EQP_MODBUS_IP'.
+Coluna 'type_sen' adicionada à tabela 'EQP_MODBUS_IP'.
+Coluna 'model_sen' adicionada à tabela 'EQP_MODBUS_IP'.
+Coluna 'name_sen' adicionada à tabela 'EQP_MODBUS_IP'.
+Coluna 'id_man' adicionada à tabela 'EQP_MODBUS_IP'.
+Coluna 'phase_reg_mod' adicionada à tabela 'DP_MODBUS_IP'.
+Coluna 'circuitBreakerManeuverType_reg_mod' adicionada à tabela 'DP_MODBUS_IP'.
+Coluna 'bushingSide' adicionada à tabela 'DP_MODBUS_IP'.
+Coluna 'id_reg_reg_mod' adicionada à tabela 'DP_MODBUS_IP'.
+Coluna 'classificacao' já existe na tabela 'DP_MODBUS_IP'.
+Coluna 'id_sen_reg_mod' adicionada à tabela 'DP_MODBUS_IP'.
+Coluna 'tipo' já existe na tabela 'DP_MODBUS_IP'.
+Migração concluída com sucesso!
 ```
 
 Para reconciliar as informações coletadas com as bases de dados do `CMA_Gateway` e `ScadaLTS`, utilize o comando:
