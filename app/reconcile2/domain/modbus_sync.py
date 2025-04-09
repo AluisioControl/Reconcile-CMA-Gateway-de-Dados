@@ -87,15 +87,10 @@ class DpModbusDataSynchronizer(BaseDataSynchronizer):
 
     def _sync_datapoint_scada(self, df: pd.DataFrame):
         """Sincroniza os dados com o ScadaLTS"""
-        global _xid_equip_to_host # já deve está populado pela classe EquipmentDataSynchronizer
-        _xid_equip_to_host = {'9': '192.168.0.102', '10': '192.168.0.102', '8': '192.168.0.102', '11': '192.168.0.102'}
         print("DpModbusDataSynchronizer... Syncing with ScadaLTS")
+        print(f"DataFrame: {df.columns}")
+        print("####")
         df = df[DATAPOINT_MODBUS_FIELDS]
-        # usar o _xid_equip_to_host para trocar o valor do xid_equip pelo valor do host
-        print(f"_xid_equip_to_host: {_xid_equip_to_host}")
-        df["xid_equip"] = df["xid_equip"].astype(str)
-        df["xid_equip"] = df["xid_equip"].map(_xid_equip_to_host)
-        print(f"df['xid_equip']: {df['xid_equip']}")
         send_to_scada(df=df, import_function=import_datapoint_modbus)
         logger.info(
             f"Enviados {len(df)} registros para o ScadaLTS, usando {import_datapoint_modbus} como função de importação."

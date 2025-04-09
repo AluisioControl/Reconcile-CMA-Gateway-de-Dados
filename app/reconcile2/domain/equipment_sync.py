@@ -93,18 +93,13 @@ class EquipmentDataSynchronizer(BaseDataSynchronizer):
             self._sync_datapoint_scada(df=changes["new"])
 
     def _sync_datapoint_scada(self, df: pd.DataFrame):
-        global _xid_equip_to_host
-        _xid_equip_to_host = {}
         """Sincroniza os dados com o ScadaLTS"""
         print("_sync_datapoint_scada... Syncing with ScadaLTS")
         import_function = import_datasource_modbus
         if self.table_name == "EQP_MODBUS_IP":
             df = df[DATASOURCE_MODBUS_FIELDS]
-            # popular o dicionário _xid_equip_to_host
-            _xid_equip_to_host = {row["xid_equip"]: row["host"] for _, row in df.iterrows()}
-            print(f"_xid_equip_to_host: {_xid_equip_to_host}")
             # # trocar o valor do xid_equip pelo valor do host
-            df["xid_equip"] = df["host"]
+            # df["xid_equip"] = df["host"]
         elif self.table_name == "EQP_DNP3":
             df = df[DATASOURCE_DNP3_FIELDS]
             import_function = import_datasource_dnp3

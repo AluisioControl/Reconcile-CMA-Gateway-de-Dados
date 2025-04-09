@@ -45,6 +45,7 @@ DATAPOINT_MODBUS_FIELDS = [
     "xid_equip",
     "enabled",
     "nome",
+    "ip_sen_reg_mod"
 ]
 
 DATAPOINT_DNP3_FIELDS = [

@@ -97,11 +97,6 @@ def create_modbus_equipment_schema() -> GenericSchema:
             "type_sen": "VARCHAR",
             "model_sen": "VARCHAR",
             "id_man": "INTEGER",
-            "id_hdw": "INTEGER",
-            "name_hdw": "VARCHAR",
-            "type_sen": "VARCHAR",
-            "model_sen": "VARCHAR",
-            "name_sen": "VARCHAR",
         },
         primary_key="xid_equip",
     )
@@ -197,7 +192,6 @@ def sync_dp_modbus(df: pd.DataFrame):
     df_translated = translator.translate(df)  # traduzir campos cma_web to cma_gateway
     # remover colunas duplicadas depois da tradução
     df_translated = df_translated.loc[:, ~df_translated.columns.duplicated()]
-    print(df_translated.columns)
     out_fields = [
         "xid_sensor",
         "xid_equip",
@@ -215,9 +209,9 @@ def sync_dp_modbus(df: pd.DataFrame):
         "circuitBreakerManeuverType_reg_mod",
         "bushingSide",
         "id_reg_reg_mod",
-        "classificacao",
         "id_sen_reg_mod",
         "tipo",
+        "ip_sen_reg_mod"
     ]
     df_final = df_translated[out_fields]  # manter apenas as colunas desejadas
 
@@ -253,9 +247,6 @@ def sync_eqp_modbus(df: pd.DataFrame):
     df_translated = translator.translate(df)  # traduzir campos cma_web to cma_gateway
     # remover colunas duplicadas depois da tradução
     df_translated = df_translated.loc[:, ~df_translated.columns.duplicated()]
-    print("# show columns")
-    print(df_translated.columns)
-    print("-----------")
     df_final = df_translated[synchronizer.OUTPUT_FIELDS]  # manter apenas as colunas desejadas
     # remover colunas duplicadas depois da
     with DatabaseConnection(configs.sqlite_db_path) as db:
