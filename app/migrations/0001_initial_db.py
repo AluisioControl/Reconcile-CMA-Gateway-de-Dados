@@ -1,4 +1,5 @@
 import sqlite3
+from app.logger import logger
 
 def create_database(db_path):
     """
@@ -217,8 +218,11 @@ def create_database(db_path):
     # Confirmar as alterações e fechar a conexão
     conn.commit()
     conn.close()
-    print("Banco de dados inicializado com sucesso!")
+    logger.info("Banco de dados inicializado com sucesso!")
 
-if __name__ == "__main__":
+def run_migration():
+    """
+    Executa a migração do banco de dados inicial.
+    """
     from app.settings import configs
     create_database(configs.sqlite_db_path)

@@ -26,7 +26,6 @@ from app.translator import (
 )
 from app.utils.data import combine_primary_with_secondary
 
-
 def create_gateway_schema() -> GenericSchema:
     return GenericSchema(
         table_name="CMA_GD",
@@ -185,7 +184,6 @@ def sync_dp_modbus(df: pd.DataFrame):
     schema = create_modbus_schema()
     synchronizer = DpModbusDataSynchronizer()
 
-    # df = loader.load()  # carregar dados do arquivo json
     df = df.drop_duplicates(subset=["id_reg_mod"])  # remover registros duplicados
     df["id_reg_mod"] = df["id_reg_mod"].astype(str)  # converter para string evitando erros
     df = df[df["id_reg_mod"].notnull() & (df["id_reg_mod"] != "")]  # remover registros nulos ou vazios

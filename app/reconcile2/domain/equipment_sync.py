@@ -14,7 +14,7 @@ from app.scadalts import (
     import_datasource_dnp3,
     import_datasource_modbus,
 )
-
+from app.settings import configs
 
 class EquipmentDataSynchronizer(BaseDataSynchronizer):
     """Sincroniza dados de equipamentos com o banco de dados"""
@@ -98,8 +98,13 @@ class EquipmentDataSynchronizer(BaseDataSynchronizer):
         import_function = import_datasource_modbus
         if self.table_name == "EQP_MODBUS_IP":
             df = df[DATASOURCE_MODBUS_FIELDS]
-            # # trocar o valor do xid_equip pelo valor do host
-            # df["xid_equip"] = df["host"]
+            # criar um dicionario para mapear os campos xid_equip para host
+            configs.xid_equip_to_host = {}
+            for _, row in df.iterrows():
+                # persistir o xid_equip e o host entre threads
+                configs.xid_equip_to_host[row["xid_equip"]] = row["host"]
+            # trocar o xid_equip por host
+            df["xid_equip"] = df["host"]
         elif self.table_name == "EQP_DNP3":
             df = df[DATASOURCE_DNP3_FIELDS]
             import_function = import_datasource_dnp3

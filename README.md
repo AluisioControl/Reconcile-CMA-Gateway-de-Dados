@@ -36,32 +36,28 @@ Para coletar as informações da API CMA_WEB, execute:
 PYTHONPATH=$(pwd) uv run python -m app.collect_cma_web
 ```
 
-### Conciliação das Informações com o Middleware
-Para criar o banco de dados e as tabelas necessárias, execute:
+### Apagar a Base de Dados
+Para apagar a base de dados, utilize o seguinte comando:
 
 ```bash
-$ rm CMA_Gateway.db 
-$ uv run python -m app.migrations.0001_initial_db
-Banco de dados inicializado com sucesso!
-$ uv run python -m app.migrations.0002_add_field
-Coluna 'id_gtw' adicionada à tabela 'CMA_GD'.
-Coluna 'id_sub' adicionada à tabela 'CMA_GD'.
-Coluna 'id_hdw' adicionada à tabela 'EQP_MODBUS_IP'.
-Coluna 'name_hdw' adicionada à tabela 'EQP_MODBUS_IP'.
-Coluna 'type_sen' adicionada à tabela 'EQP_MODBUS_IP'.
-Coluna 'model_sen' adicionada à tabela 'EQP_MODBUS_IP'.
-Coluna 'name_sen' adicionada à tabela 'EQP_MODBUS_IP'.
-Coluna 'id_man' adicionada à tabela 'EQP_MODBUS_IP'.
-Coluna 'phase_reg_mod' adicionada à tabela 'DP_MODBUS_IP'.
-Coluna 'circuitBreakerManeuverType_reg_mod' adicionada à tabela 'DP_MODBUS_IP'.
-Coluna 'bushingSide' adicionada à tabela 'DP_MODBUS_IP'.
-Coluna 'id_reg_reg_mod' adicionada à tabela 'DP_MODBUS_IP'.
-Coluna 'classificacao' já existe na tabela 'DP_MODBUS_IP'.
-Coluna 'id_sen_reg_mod' adicionada à tabela 'DP_MODBUS_IP'.
-Coluna 'tipo' já existe na tabela 'DP_MODBUS_IP'.
-Migração concluída com sucesso!
+$ ./reset_db.sh 
+Iniciando migrações em ../CMA_Gateway.db
+Executing migration: 0001_initial_db.py
+Executing migration: 0002_add_field.py
+Executing migration: 0003_remove_marca_modelo.py
+Migration file 0003_remove_marca_modelo.py does not contain a run_migration function.
+Database reset complete.
 ```
 
+### Migrate - Para atualizar um Banco de Dados existente para versão mais recente
+Para atualizar um banco de dados existente para a versão mais recente, utilize o seguinte comando:
+- Só atualiza se houver alterações para ser aplicada.
+
+```bash
+$ uv run python -m app.migrate
+```
+
+### Conciliação das Informações com o Middleware
 Para reconciliar as informações coletadas com as bases de dados do `CMA_Gateway` e `ScadaLTS`, utilize o comando:
 
 ```bash

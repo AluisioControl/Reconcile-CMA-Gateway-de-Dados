@@ -3,7 +3,7 @@ import sqlite3  # Use o banco de sua escolha
 import importlib.util
 from app.settings import configs
 
-DB_PATH = os.path.join(os.path.dirname(__file__), configs.sqlite_db_path)
+DB_PATH = configs.sqlite_db_path
 
 def initialize_database():
     """Inicializa a tabela de controle de migrations."""
@@ -58,12 +58,20 @@ def execute_migrations():
         module_name = os.path.splitext(migration_file)[0]
 
         print(f"Executing migration: {migration_file}")
+        # Carrega o módulo de migração
         spec = importlib.util.spec_from_file_location(module_name, migration_path)
+        # Cria um novo módulo a partir do spec
         module = importlib.util.module_from_spec(spec)
+        # Executa o módulo
         spec.loader.exec_module(module)
+        if hasattr(module, 'run_migration'):
+            module.run_migration()
+        else:
+            print(f"Migration file {migration_file} does not contain a run_migration function.")
 
         # Marca a migration como aplicada
         mark_migration_as_applied(migration_file)
 
 if __name__ == "__main__":
+    print(f"Iniciando migrações em {DB_PATH}")
     execute_migrations()

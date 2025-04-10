@@ -1,4 +1,5 @@
 import sqlite3
+from app.logger import logger
 
 def add_column_if_not_exists(cursor, table_name, column_name, column_type):
     """
@@ -16,9 +17,9 @@ def add_column_if_not_exists(cursor, table_name, column_name, column_type):
     # Verificar se a coluna já existe
     if column_name not in columns:
         cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}")
-        print(f"Coluna '{column_name}' adicionada à tabela '{table_name}'.")
+        logger.info(f"Coluna '{column_name}' adicionada à tabela '{table_name}'.")
     else:
-        print(f"Coluna '{column_name}' já existe na tabela '{table_name}'.")
+        logger.info(f"Coluna '{column_name}' já existe na tabela '{table_name}'.")
 
 def migrate_database(db_path):
     """
@@ -54,8 +55,11 @@ def migrate_database(db_path):
     # Confirmar as alterações e fechar a conexão
     conn.commit()
     conn.close()
-    print("Migração concluída com sucesso!")
+    logger.info("Migração concluída com sucesso!")
 
-if __name__ == "__main__":
+def run_migration():
+    """
+    Executa a migração do banco de dados inicial.
+    """
     from app.settings import configs
     migrate_database(configs.sqlite_db_path)
