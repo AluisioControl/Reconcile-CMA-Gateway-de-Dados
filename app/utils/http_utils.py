@@ -7,6 +7,7 @@ import aiohttp
 async def fetch_with_retry(
     url: str,
     headers: Dict[str, str],
+    params: Optional[Dict[str, str]] = None,
     method: str = "GET",
     max_attempts: int = 3,
     timeout: Optional[float] = 15,
@@ -36,6 +37,7 @@ async def fetch_with_retry(
                     method=method,
                     url=url,
                     headers=headers,
+                    params=params,
                     timeout=aiohttp.ClientTimeout(total=timeout),
                     **kwargs,
                 ) as response:
