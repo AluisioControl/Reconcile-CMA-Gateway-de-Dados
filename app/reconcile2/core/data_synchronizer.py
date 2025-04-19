@@ -32,6 +32,8 @@ class DataSynchronizer(ABC):
 class BaseDataSynchronizer(DataSynchronizer):
     """Implementação base para sincronização"""
 
+    _insert_record_scada_lts_params = None
+
     def _insert_record_scada_lts(self, *args, **kwargs):
         # orverriden in __init__
         raise NotImplementedError("Método não implementado")
@@ -73,7 +75,7 @@ class BaseDataSynchronizer(DataSynchronizer):
                 "ds_id": "xid_sensor",
                 "dp_id": "xid_equip",
             }
-        elif self.table_name == "EQ_MODBUS_IP":
+        elif self.table_name == "EQP_MODBUS_IP":
             self._insert_record_scada_lts = import_datasource_modbus
             self._insert_record_scada_lts_params = [
                 "xid_equip",
@@ -237,6 +239,11 @@ class BaseDataSynchronizer(DataSynchronizer):
             self._sacada_lts_delete_hard(**params)
 
     def _remove_records_scada_lts_soft(self, record_ids: set, db: DatabaseConnection):
+        if self.insert_record_scada_lts_params is None:
+            msg = f"Parâmetros de inserção não definidos para {self.table_name}"
+            print(f"Erro: {msg}")
+            logger.error(msg)
+            return
         logger.info(f"Desabilitando registros do SCADA-LTS: {record_ids}")
         records = self._get_record_by_ids(ids=record_ids, db=db)
         if records.empty:

@@ -2,6 +2,7 @@ import asyncio
 import json
 import sqlite3
 from asyncio import Semaphore
+import sys
 
 import pandas as pd
 
@@ -99,23 +100,33 @@ async def main():
     list_registers_modbus = []
     list_sensors_dnp3 = []
     list_registers_dnp3 = []
-
     all_flat_data = []
-    # hardwares_parsed = []
-    # hardwares_combined = []
     sensors_parsed = []
     gateways = await fetch_all_gateways(host=configs.host, auth_token=await configs.auth_token)
     logger.info(f"gateway disponíveis: {', '.join([gw['name'] for gw in gateways])}")
     if not gateways:
-        print("\033[91m >>> Nenhum gateway disponível <<< \x1b[0m")
-    # get gateway by name
+        msg = "Atenção: Nenhum gateway encontrado. Verifique a conexão com o servidor."
+        print(f"\033[91m {msg} <<< \x1b[0m")
+        logger.critical(msg)
+        sys.exit(1)
+
+    # filter gateway by name
     gateways_founds = [gateway for gateway in gateways if gateway["name"] == configs.gateway_name]
     if not gateways_founds:
         logger.error(f"Gateway {configs.gateway_name} não encontrado")
         print(f"\033[91m >>> Gateway {configs.gateway_name} não encontrado <<< \x1b[0m")
-        print(f"\033[93m >>> Gateways disponíveis: {', '.join([gw['name'] for gw in gateways])} <<< \x1b[0m")
-        raise ValueError(f"Gateway {configs.gateway_name} não encontrado")
+        print(f"\033[93m >>> Gateways disponíveis: {', '.join([gw['name'] for gw in gateways if gw['active']])} <<< \x1b[0m")
+        sys.exit(1)
+
     for gateway in gateways_founds:
+        # if activate is false raise valueerror
+        if gateway["active"]==False:
+            msg = f"Atenção: O gateway {gateway['name']} está atualmente inativo. Não é possível coletar dados nessa operação. Por favor, verifique o equipamento"
+            print(f"\033[91m {msg} <<< \x1b[0m")
+            logger.critical(msg)
+            print(f"\033[93m >>> Gateways disponíveis: {', '.join([gw['name'] for gw in gateways if gw['active']])} <<< \x1b[0m")
+            sys.exit(1)
+
         gateway_id = gateway["id"]
         print(f"gateway name: {gateway['name']}")
         logger.info(f"gateway name: {gateway['name']}")
@@ -156,7 +167,7 @@ async def main():
             if not sensors["content"]:
                 logger.warning(f"O hardware id: {hardware_id} não tem modbus dnp3")
             else:
-                print(f"Coleando sensores {len(sensors)} modbus...")
+                print(f"Coletando sensores {len(sensors)} modbus...")
                 for sensor in sensors["content"]:  # informação de sensores modbus paginada
                     sensor_id = sensor["id"]
                     logger.info(f"   Nome sensor modbus: {sensor['name']}")
@@ -196,7 +207,7 @@ async def main():
             if not sensors_dnp["content"]:
                 logger.warning(f"O hardware id: {hardware_id} não tem sensores dnp3")
             else:
-                print(f"Coleando sensores {len(sensors_dnp)} dnp3...")
+                print(f"Coletando sensores {len(sensors_dnp)} dnp3...")
                 for sensor_dnp in sensors_dnp["content"]:  # informação de sensores modbus paginada
                     sensor_dnp_id = sensor_dnp["id"]
                     logger.info("  sensor_dnp_id", sensor_dnp_id)
