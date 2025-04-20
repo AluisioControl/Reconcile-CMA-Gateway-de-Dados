@@ -239,7 +239,7 @@ class BaseDataSynchronizer(DataSynchronizer):
             self._sacada_lts_delete_hard(**params)
 
     def _remove_records_scada_lts_soft(self, record_ids: set, db: DatabaseConnection):
-        if self.insert_record_scada_lts_params is None:
+        if self._insert_record_scada_lts_params is None:
             msg = f"Parâmetros de inserção não definidos para {self.table_name}"
             print(f"Erro: {msg}")
             logger.error(msg)
