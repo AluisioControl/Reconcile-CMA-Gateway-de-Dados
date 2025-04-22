@@ -205,7 +205,7 @@ def create_database(db_path):
     # Criar tabela PERSISTENCE
     cursor.execute('''
         CREATE TABLE "PERSISTENCE" (
-            id VARCHAR NOT NULL, 
+            id INTEGER NOT NULL, 
             content_data VARCHAR, 
             sended BOOLEAN, 
             PRIMARY KEY (id)
