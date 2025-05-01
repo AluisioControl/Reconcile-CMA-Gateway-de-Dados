@@ -42,6 +42,7 @@ def migrate_database(db_path):
     add_column_if_not_exists(cursor, "EQP_MODBUS_IP", "model_sen", "TEXT")
     add_column_if_not_exists(cursor, "EQP_MODBUS_IP", "name_sen", "TEXT")
     add_column_if_not_exists(cursor, "EQP_MODBUS_IP", "id_man", "INTEGER")
+    add_column_if_not_exists(cursor, "EQP_MODBUS_IP", "model_hdw", "TEXT")
 
     # Adicionando colunas à tabela DP_MODBUS_IP
     add_column_if_not_exists(cursor, "DP_MODBUS_IP", "phase", "TEXT")

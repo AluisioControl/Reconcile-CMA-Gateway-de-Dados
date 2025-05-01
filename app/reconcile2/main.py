@@ -96,6 +96,7 @@ def create_modbus_equipment_schema() -> GenericSchema:
             "type_sen": "VARCHAR",
             "model_sen": "VARCHAR",
             "id_man": "INTEGER",
+            "model_hdw": "VARCHAR",
         },
         primary_key="xid_equip",
     )

@@ -137,6 +137,7 @@ class ModbusEquipmentSynchronizer(EquipmentDataSynchronizer):
         "name_hdw",
         "type_sen",
         "model_sen",
+        "model_hdw",
         "name_sen",
         "id_man"
     ]

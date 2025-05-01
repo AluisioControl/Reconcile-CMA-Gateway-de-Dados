@@ -81,15 +81,15 @@ hardware_translate = [
     ["CMA Gateway ID", "cmaGatewayId", "cmaGatewayId_hdw", "", "", "", ""],
     ["Name", "name", "name_hdw", "name_hdw", "name_hdw", "", "name_hdw"],
     ["SAP ID", "sapId", "sapId_hdw", "sap_id", "sap_id", "", "SAP_id"],
-    ["", "type", "", "", "", "", ""],
-    ["", "model", "", "", "", "", ""],
+    #["", "type", "", "", "", "", ""],
+    #["", "model", "", "", "", "", ""],
     ["Active", "active", "active_hdw", "", "", "", ""],
     ["CMA Gateway ID", "id", "id_cma", "", "", "", ""],
     ["CMA Gateway Name", "name", "name_cma", "", "", "", ""],
     ["CMA Gateway IP", "ip", "ip_cma", "", "", "", ""],
     ["CMA Gateway Active", "active", "active_cma", "", "", "", ""],
     ["type", "type", "type_hdw", "type", "type", "type"],
-    ["model", "model", "model_hdw", "model", "model", "model"],
+    ["model", "model", "model_hdw", "model", "model", "", "model"],
 ]
 if len(hardware_translate[0]) != len(bases_names):
     raise ValueError("Número de colunas inválido para hardware_translate")
@@ -106,6 +106,7 @@ sensores_modbus_translate = [
     ["Name", "Name", "name_sen", "name_sen", "name_sen", "", "name_sen"],
     ["Description", "Description", "description_sen", "", "", "", ""],
     ["Model", "Model", "model_sen", "model_sen", "model_sen", "", "model_sen"],
+    ["Model HDW", "Model HDW", "model_hdw", "model_hdw", "model_hdw", "", "model_hdw"],
     ["IP", "IP", "ip_sen", "host", "host", "host", "IP"],
     ["Port", "Port", "port_sen", "port", "port", "port", ""],
     ["Type", "Type", "type_sen", "type_sen", "type_sen", "", "tipo_sensor_modbus"],

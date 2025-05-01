@@ -157,6 +157,7 @@ def parse_sensor_modbus_data(data_sensores):
         "name_sen": data_sensores.get("name", None),
         "description_sen": data_sensores.get("description", None),
         "model_sen": data_sensores.get("model", None),
+        "model_hdw": data_sensores.get("hardware", {}).get("model", None),
         "ip_sen": data_sensores.get("ip", None),
         "port_sen": data_sensores.get("port", None),
         "type_sen": data_sensores.get("type", None),
