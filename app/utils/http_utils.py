@@ -1,5 +1,6 @@
 import asyncio
 from typing import Any, Dict, Optional
+from app.logger import logger
 
 import aiohttp
 
@@ -54,11 +55,13 @@ async def fetch_with_retry(
             print(f"Tentativa {attempt}: erro de conexão. Tentando novamente...")
             if attempt == max_attempts:
                 # raise Exception(f"Falha após {max_attempts} tentativas: {str(e)}")
-                print(f"Falha  de conexão após {max_attempts} tentativas! Verfique a conexão.")
+                print(f"Falha  de conexão após {max_attempts} tentativas! Verifique a conexão.")
+                logger.error(f"Falha  de conexão após {max_attempts} tentativas! Verifique a conexão.")
                 exit(1)
         except asyncio.exceptions.TimeoutError:
             print(f"Tentativa {attempt}: timeout, tentando novamente...")
             if attempt == max_attempts:
                 # raise Exception(f"Timeout persistente após {max_attempts} tentativas")
-                print(f"Timeout persistente após {max_attempts} tentativas")
+                print(f"Timeout persistente após {max_attempts} tentativas.")
+                logger.error(f"Timeout persistente após {max_attempts} tentativas.")
                 exit(1)
