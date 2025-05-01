@@ -51,10 +51,14 @@ async def fetch_with_retry(
                         raise Exception("Falha na autenticação. Verifique o token de acesso.")
                     raise Exception(f"Falha na requisição. Código de status: {response.status}")
         except aiohttp.ClientConnectionError as e:
-            print(f"Tentativa {attempt}: erro de conexão ({e}), tentando novamente...")
+            print(f"Tentativa {attempt}: erro de conexão. Tentando novamente...")
             if attempt == max_attempts:
-                raise Exception(f"Falha após {max_attempts} tentativas: {str(e)}")
+                # raise Exception(f"Falha após {max_attempts} tentativas: {str(e)}")
+                print(f"Falha  de conexão após {max_attempts} tentativas! Verfique a conexão.")
+                exit(1)
         except asyncio.exceptions.TimeoutError:
             print(f"Tentativa {attempt}: timeout, tentando novamente...")
             if attempt == max_attempts:
-                raise Exception(f"Timeout persistente após {max_attempts} tentativas")
+                # raise Exception(f"Timeout persistente após {max_attempts} tentativas")
+                print(f"Timeout persistente após {max_attempts} tentativas")
+                exit(1)

@@ -9,16 +9,20 @@ async def get_auth_token(host: str, username: str, password: str):
     headers = {"Content-Type": "application/json"}
     payload = {"username": username, "password": password}
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, headers=headers, json=payload) as response:
-            if response.status == 201:
-                token_response = await response.json()
-                return token_response.get("access_token")  # Assumindo que o token está nesta chave
-            else:
-                # Gerencia o erro de autenticação
-                raise Exception(f"Failed to get token, status code: {response.status}")
-        response
-
+    try: 
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers=headers, json=payload) as response:
+                if response.status == 201:
+                    token_response = await response.json()
+                    return token_response.get("access_token")  # Assumindo que o token está nesta chave
+                else:
+                    # Gerencia o erro de autenticação
+                    raise Exception(f"Failed to get token, status code: {response.status}")
+            response
+    except ConnectionError as e:
+        print("Ocorreu um erro ao tentar estabelecer conexão! Verifique se você está conectado a internet.")
+    except Exception as e:
+        print("Ocorreu um erro ao tentar estabelecer conexão!")
 
 def relogin():
     from .settings import configs
