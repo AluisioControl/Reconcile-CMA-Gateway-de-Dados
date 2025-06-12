@@ -49,6 +49,7 @@ class RabbitMQHandler(logging.Handler):
             self.channel.queue_declare(queue=self.exchange, durable=True)
         except pika.exceptions.AMQPConnectionError as e:
             print(f"Erro ao conectar ao RabbitMQ ({self.host}:{self.port}): {e}")
+            raise ConnectionError(f"Não foi possível conectar ao RabbitMQ: {e}")
 
     def emit(self, record):
         try:
@@ -75,14 +76,19 @@ class RabbitMQHandler(logging.Handler):
 
 
 # Carregando variáveis de ambiente
-rabbit_handler = RabbitMQHandler(
-    host=RABBIT_HOST,
-    port=RABBIT_PORT,
-    username=RABBIT_USER,
-    password=RABBIT_PASS,
-    exchange=RABBIT_TOPICO,
-    routing_key=RABBIT_CHAVE,   
-)
+try:
+    rabbit_handler = RabbitMQHandler(
+        host=RABBIT_HOST,
+        port=RABBIT_PORT,
+        username=RABBIT_USER,
+        password=RABBIT_PASS,
+        exchange=RABBIT_TOPICO,
+        routing_key=RABBIT_CHAVE,   
+    )
+    print("RabbitMQHandler configurado com sucesso.")
+except Exception as e:
+    print(f"Erro ao configurar RabbitMQHandler, logger não será enviado ao RabbitMQ")
+    rabbit_handler = None
 
 
 # Criando handlers para diferentes níveis de log
@@ -98,8 +104,9 @@ error_handler = logging.FileHandler(LOG_ERROR)
 error_handler.setFormatter(log_formatter)
 error_handler.setLevel(logging.ERROR)  # Aceita ERROR e acima
 
-rabbit_handler.setFormatter(log_formatter)
-rabbit_handler.setLevel(logging.ERROR)  # Aceita ERROR e acima
+if rabbit_handler:
+    rabbit_handler.setFormatter(log_formatter)
+    rabbit_handler.setLevel(logging.ERROR)  # Aceita ERROR e acima
 
 
 # Filtros personalizados para segregar os níveis
@@ -131,7 +138,9 @@ logger.setLevel(logging.DEBUG)  # Nível mínimo do logger (INFO para capturar t
 logger.addHandler(debug_handler)
 logger.addHandler(info_warning_handler)
 logger.addHandler(error_handler)
-logger.addHandler(rabbit_handler)
+if rabbit_handler:
+    # Adiciona o handler do RabbitMQ se configurado corretamente
+    logger.addHandler(rabbit_handler)
 
 
 # Testando os logs
