@@ -87,7 +87,7 @@ async def collect_registers_dnp(sensor_dnp_id):
     print(f"   - Coletando {len(registers_data['content'])} registros dnp3 sensor id: {sensor_dnp_id}...")
     # processar os registros em paralelo
     tasks = [fetch_and_parse_register_dnp(register_data) for register_data in registers_data["content"]]
-    logger.info("    - Coletando ", len(tasks), " registros")
+    logger.info(f"    - Coletando {len(tasks)} registros")
     registers = await asyncio.gather(*tasks)
     return registers
 
@@ -167,7 +167,7 @@ async def main():
             if not sensors["content"]:
                 logger.warning(f"O hardware id: {hardware_id} não tem modbus dnp3")
             else:
-                print(f"Coletando sensores {len(sensors)} modbus...")
+                print(f"Coletando sensores {len(sensors["content"])} modbus...")
                 for sensor in sensors["content"]:  # informação de sensores modbus paginada
                     sensor_id = sensor["id"]
                     logger.info(f"   Nome sensor modbus: {sensor['name']}")
@@ -210,7 +210,7 @@ async def main():
                 print(f"Coletando sensores {len(sensors_dnp)} dnp3...")
                 for sensor_dnp in sensors_dnp["content"]:  # informação de sensores modbus paginada
                     sensor_dnp_id = sensor_dnp["id"]
-                    logger.info("  sensor_dnp_id", sensor_dnp_id)
+                    logger.info(f"  sensor_dnp_id: {sensor_dnp_id}")
                     sensor_dnp_data = await fetch_sensor_dnp_by_id(
                         host=configs.host,
                         auth_token=await configs.auth_token,
@@ -225,12 +225,11 @@ async def main():
                     list_registers_dnp3 += registers_dnp3
                     sensor_combine_registers_dnp += combine_primary_with_secondary(sensor_parsed, registers_dnp3)
                     logger.info(
-                        "  +sub total resistros por sensor:",
-                        len(sensor_combine_registers_dnp),
+                        f"  +sub total resistros por sensor: {len(sensor_combine_registers_dnp)}"
                     )
                     if configs.DEBUG:
                         break
-                    logger.info("total de resgistro por sensor:", len(sensors_dnp_parsed))
+                    logger.info(f"total de resgistro por sensor: {len(sensors_dnp_parsed)}")
             # combinar o resultado de hardware com o resultado de sensores
             hardware_combine_sensors_dnp += combine_primary_with_secondary(
                 hardware_parsed, sensor_combine_registers_dnp

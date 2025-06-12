@@ -45,8 +45,8 @@ class RabbitMQHandler(logging.Handler):
                 pika.ConnectionParameters(host=self.host, port=self.port, credentials=self.credentials)
             )
             self.channel = self.connection.channel()
-            # Declara o exchange do tipo topic
-            self.channel.exchange_declare(exchange=self.exchange, exchange_type="topic")
+            # Declara a fila com o nome do exchange (seguindo o padrão dos exemplos)
+            self.channel.queue_declare(queue=self.exchange, durable=True)
         except pika.exceptions.AMQPConnectionError as e:
             print(f"Erro ao conectar ao RabbitMQ ({self.host}:{self.port}): {e}")
 
@@ -58,8 +58,13 @@ class RabbitMQHandler(logging.Handler):
             # Formata a mensagem de log
             msg = self.format(record)
 
-            # Publica a mensagem no RabbitMQ
-            self.channel.basic_publish(exchange=self.exchange, routing_key=self.routing_key, body=msg.encode("utf-8"))
+            # Publica a mensagem no RabbitMQ (usando exchange vazio e routing_key como nome da fila)
+            self.channel.basic_publish(
+                exchange='', 
+                routing_key=self.exchange, 
+                body=msg.encode("utf-8"), 
+                properties=pika.BasicProperties(delivery_mode=2)
+            )
         except Exception as e:
             print(f"Erro ao enviar mensagem para RabbitMQ: {e}")
 
@@ -76,7 +81,7 @@ rabbit_handler = RabbitMQHandler(
     username=RABBIT_USER,
     password=RABBIT_PASS,
     exchange=RABBIT_TOPICO,
-    routing_key=RABBIT_CHAVE,
+    routing_key=RABBIT_CHAVE,   
 )
 
 
@@ -126,14 +131,17 @@ logger.setLevel(logging.DEBUG)  # Nível mínimo do logger (INFO para capturar t
 logger.addHandler(debug_handler)
 logger.addHandler(info_warning_handler)
 logger.addHandler(error_handler)
+logger.addHandler(rabbit_handler)
 
 
 # Testando os logs
 def test_logging():
+    print("Testando logs...")
     logger.info("Este é um log de nível INFO")
     logger.warning("Este é um log de nível WARNING")
     logger.error("Este é um log de nível ERROR")
     logger.debug("Este é um log de nível DEBUG")
+    print("Logs testados com sucesso!")
 
 
 if __name__ == "__main__":

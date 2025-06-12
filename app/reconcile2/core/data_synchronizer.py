@@ -255,6 +255,8 @@ class BaseDataSynchronizer(DataSynchronizer):
                 if key in self._insert_record_scada_lts_params:
                     data.update({key: record[key]})
             data.update({"enabled": False})
+            ip = configs.xid_equip_to_host[data["xid_equip"]]
+            data["xid_equip"] = ip
             raw = self._insert_record_scada_lts(**data)
             send_data_to_scada(raw)
 

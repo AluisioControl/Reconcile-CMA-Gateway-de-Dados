@@ -6,6 +6,8 @@ from app.logger import logger
 
 from .login import get_auth_token, relogin
 
+from app.utils.data import get_or_create_cache, save_cache
+
 if not load_dotenv():
     raise Exception("Could not load .env file")
 
@@ -34,6 +36,7 @@ class Configs:
             SCADALTS_DELETE_TYPE = os.environ.get("SCADALTS_DELETE_TYPE", "soft")
             if SCADALTS_DELETE_TYPE not in ["soft", "hard"]:
                 raise ValueError(f"Invalid SCADALTS_DELETE_TYPE: {SCADALTS_DELETE_TYPE}")
+            self.xid_equip_to_host = get_or_create_cache("xid_equip_to_host.pkl", default={})
             self.SCADALTS_DELETE_TYPE = SCADALTS_DELETE_TYPE
 
     @property

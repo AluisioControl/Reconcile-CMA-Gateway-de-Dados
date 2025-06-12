@@ -87,6 +87,8 @@ def process_data(df, mapping, out_fields, filter_column="xid_equip", unique_key=
         df = df[df[filter_column].notna() & df[filter_column].str.strip().astype(bool)]
     return df
 
+import re
+ipv4_regex = re.compile(r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$")
 
 def send_to_scada(df, import_function):
     """Envia cada linha do DataFrame para o ScadaLTS usando a função de importação fornecida."""
@@ -98,6 +100,14 @@ def send_to_scada(df, import_function):
             if row.isnull().values.any():
                 logger.error(f"Faltando dados: {row.to_dict()}")
                 continue
+            item = row.to_dict()
+
+            ip = item.get("xid_equip", None)
+            if not ip or not ipv4_regex.match(ip):
+                logger.error(f"send_data_to_scada: xid_equip {ip} is not a valid IP address")
+                raise ValueError(f"send_data_to_scada: xid_equip {ip} is not a valid IP address")
+
+
             data = import_function(**row.to_dict())
             send_data_to_scada(data)
             # sleep(0.3)  # Aguarda 300 ms

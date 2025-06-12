@@ -12,6 +12,7 @@ set +a
 # remove the database file
 if [ -f "${SQLITE_MIDDLEWARE_PATH}" ]; then
     rm ${SQLITE_MIDDLEWARE_PATH}
+    echo "Removed database file: ${SQLITE_MIDDLEWARE_PATH}"
 else
     echo "File ${SQLITE_MIDDLEWARE_PATH} does not exist."
 fi

@@ -15,6 +15,9 @@ from app.scadalts import (
     import_datasource_modbus,
 )
 from app.settings import configs
+import pickle # Importando pickle para serialização de dados
+from app.utils.data import get_or_create_cache, save_cache
+
 
 class EquipmentDataSynchronizer(BaseDataSynchronizer):
     """Sincroniza dados de equipamentos com o banco de dados"""
@@ -99,10 +102,11 @@ class EquipmentDataSynchronizer(BaseDataSynchronizer):
         if self.table_name == "EQP_MODBUS_IP":
             df = df[DATASOURCE_MODBUS_FIELDS]
             # criar um dicionario para mapear os campos xid_equip para host
-            configs.xid_equip_to_host = {}
             for _, row in df.iterrows():
                 # persistir o xid_equip e o host entre threads
                 configs.xid_equip_to_host[row["xid_equip"]] = row["host"]
+            # preservar o xid_equip_to_host entre sincronizações
+            save_cache("xid_equip_to_host.pkl", configs.xid_equip_to_host)
             # trocar o xid_equip por host
             df["xid_equip"] = df["host"]
         elif self.table_name == "EQP_DNP3":

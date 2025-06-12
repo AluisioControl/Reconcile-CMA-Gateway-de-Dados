@@ -34,6 +34,10 @@ async def fetch_with_retry(
     for attempt in range(1, max_attempts + 1):
         try:
             async with aiohttp.ClientSession() as session:
+                try:
+                    params.update({"useUserId": "false"})
+                except AttributeError:
+                    params = {"useUserId": "false"}
                 async with session.request(
                     method=method,
                     url=url,

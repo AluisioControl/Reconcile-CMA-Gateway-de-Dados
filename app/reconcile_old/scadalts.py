@@ -95,21 +95,21 @@ def process_data(df, mapping, out_fields, filter_column="xid_equip", unique_key=
     return df
 
 
-def send_to_scada(df, import_function):
-    """Envia cada linha do DataFrame para o ScadaLTS usando a função de importação fornecida."""
-    if df is None:
-        print("DataFrame vazio.")
-        return
-    for _, row in df.iterrows():
-        try:
-            if row.isnull().values.any():
-                logger.error(f"Faltando dados: {row.to_dict()}")
-                continue
-            data = import_function(**row.to_dict())
-            print(f"Dados: {row.to_dict()}\n")
-            send_data_to_scada(data)
-        except Exception as e:
-            logger.error(f"Erro ao enviar dados: {e}")
+# def send_to_scada(df, import_function):
+#     """Envia cada linha do DataFrame para o ScadaLTS usando a função de importação fornecida."""
+#     if df is None:
+#         print("DataFrame vazio.")
+#         return
+#     for _, row in df.iterrows():
+#         try:
+#             if row.isnull().values.any():
+#                 logger.error(f"Faltando dados: {row.to_dict()}")
+#                 continue
+#             data = import_function(**row.to_dict())
+#             print(f"Dados: {row.to_dict()}\n")
+#             send_data_to_scada(data)
+#         except Exception as e:
+#             logger.error(f"Erro ao enviar dados: {e}")
 
 
 def main():

@@ -1,7 +1,9 @@
 import asyncio
 import os
-
+import sys
 import aiohttp
+
+from app.logger import logger
 
 
 async def get_auth_token(host: str, username: str, password: str):
@@ -17,12 +19,26 @@ async def get_auth_token(host: str, username: str, password: str):
                     return token_response.get("access_token")  # Assumindo que o token está nesta chave
                 else:
                     # Gerencia o erro de autenticação
-                    raise Exception(f"Failed to get token, status code: {response.status}")
+                    msg = f"Failed to get token, status code: {response.status}"
+                    logger.error(msg)
+                    print(msg)
+                    if response.status == 401:
+                        print("Credenciais inválidas. Por favor, verifique seu nome de usuário e senha.")
+                    elif response.status == 403:
+                        print("Acesso negado. Você não tem permissão para acessar este recurso.")
+                    else:
+                        print(f"Erro desconhecido: {response.status}")
+                    print("Tente novamente ou entre em contato com o administrador do sistema.")
+                    sys.exit(1)
             response
     except ConnectionError as e:
-        print("Ocorreu um erro ao tentar estabelecer conexão! Verifique se você está conectado a internet.")
+        msg = f"Ocorreu um erro ao tentar estabelecer conexão! Verifique se você está conectado a internet. Erro: {e}"
+        logger.error(msg)
+        print(msg)
     except Exception as e:
-        print("Ocorreu um erro ao tentar estabelecer conexão!")
+        msg = f"Ocorreu um erro ao tentar estabelecer conexão! Erro: {e}"
+        logger.error(msg)
+        print(msg)
 
 def relogin():
     from .settings import configs
